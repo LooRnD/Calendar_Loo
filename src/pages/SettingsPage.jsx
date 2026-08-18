@@ -17,7 +17,7 @@ export default function SettingsPage() {
   const handleSavePom = (e) => { e.preventDefault(); saveSettings(pomForm); };
 
   const handleClearData = () => {
-    if (window.confirm('Bạn có chắc muốn xóa TẤT CẢ dữ liệu? Hành động này không thể hoàn tác!')) {
+    if (window.confirm('Are you sure you want to delete ALL data? This action cannot be undone!')) {
       localStorage.clear();
       window.location.reload();
     }
@@ -28,33 +28,33 @@ export default function SettingsPage() {
       <div className="mb-24">
         <h1 className="fs-24 fw-700 text-primary">⚙️ Settings</h1>
         <p className="text-secondary fs-13" style={{ marginTop: 4 }}>
-          Cá nhân hóa trải nghiệm của bạn
+          Personalize your experience
         </p>
       </div>
 
       {/* User Profile */}
       <div className="card mb-16">
-        <div className="fs-16 fw-700 mb-16">👤 Hồ sơ cá nhân</div>
+        <div className="fs-16 fw-700 mb-16">👤 Personal Profile</div>
         <form onSubmit={handleSaveUser}>
           <div className="form-group">
-            <label className="form-label">Họ tên</label>
+            <label className="form-label">Full Name</label>
             <input className="form-input" value={userForm.name}
               onChange={e => setUser('name', e.target.value)}
-              placeholder="Tên của bạn..." maxLength={50} />
+              placeholder="Your name..." maxLength={50} />
           </div>
           <div className="form-group">
-            <label className="form-label">Vai trò / Tiêu đề</label>
+            <label className="form-label">Role / Title</label>
             <input className="form-input" value={userForm.role}
               onChange={e => setUser('role', e.target.value)}
-              placeholder="Ví dụ: Developer, Student..." maxLength={50} />
+              placeholder="E.g., Developer, Student..." maxLength={50} />
           </div>
           <div className="form-group">
-            <label className="form-label">Màu Avatar</label>
+            <label className="form-label">Avatar Color</label>
             <ColorPicker value={userForm.avatarColor || '#6C60E0'}
               onChange={c => setUser('avatarColor', c)} />
           </div>
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <button type="submit" className="btn btn-primary">Lưu hồ sơ</button>
+            <button type="submit" className="btn btn-primary">Save profile</button>
           </div>
         </form>
       </div>
@@ -64,10 +64,10 @@ export default function SettingsPage() {
         <div className="fs-16 fw-700 mb-16">🍅 Pomodoro Settings</div>
         <form onSubmit={handleSavePom}>
           {[
-            { key: 'workDuration', label: 'Thời gian làm việc', min: 5, max: 90, unit: 'phút' },
-            { key: 'shortBreak', label: 'Nghỉ ngắn', min: 1, max: 30, unit: 'phút' },
-            { key: 'longBreak', label: 'Nghỉ dài', min: 5, max: 60, unit: 'phút' },
-            { key: 'cyclesBeforeLong', label: 'Cycles trước nghỉ dài', min: 2, max: 8, unit: 'cycles' },
+            { key: 'workDuration', label: 'Work Duration', min: 5, max: 90, unit: 'minutes' },
+            { key: 'shortBreak', label: 'Short Break', min: 1, max: 30, unit: 'minutes' },
+            { key: 'longBreak', label: 'Long Break', min: 5, max: 60, unit: 'minutes' },
+            { key: 'cyclesBeforeLong', label: 'Cycles before long break', min: 2, max: 8, unit: 'cycles' },
           ].map(({ key, label, min, max, unit }) => (
             <div className="form-group" key={key}>
               <label className="form-label">{label}: <strong>{pomForm[key]} {unit}</strong></label>
@@ -79,9 +79,9 @@ export default function SettingsPage() {
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
             {[
-              { key: 'autoStartBreak', label: '⚡ Tự động bắt đầu nghỉ' },
-              { key: 'autoStartWork', label: '🔄 Tự động bắt đầu làm' },
-              { key: 'soundEnabled', label: '🔔 Âm thanh thông báo' },
+              { key: 'autoStartBreak', label: '⚡ Auto-start break' },
+              { key: 'autoStartWork', label: '🔄 Auto-start work' },
+              { key: 'soundEnabled', label: '🔔 Notification sound' },
             ].map(({ key, label }) => (
               <label key={key} className="flex items-center gap-8" style={{ cursor: 'pointer' }}>
                 <input type="checkbox" checked={pomForm[key]}
@@ -93,19 +93,19 @@ export default function SettingsPage() {
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <button type="submit" className="btn btn-primary">Lưu cài đặt Pomodoro</button>
+            <button type="submit" className="btn btn-primary">Save settings Pomodoro</button>
           </div>
         </form>
       </div>
 
       {/* About */}
       <div className="card mb-16">
-        <div className="fs-16 fw-700 mb-12">ℹ️ Về Calendar Loo</div>
+        <div className="fs-16 fw-700 mb-12">ℹ️ About Calendar Loo</div>
         <div className="fs-13 text-secondary" style={{ lineHeight: 1.8 }}>
           <p>📅 <strong>Calendar Loo</strong> — Personal Productivity Dashboard</p>
           <p>🛠️ Built with React + Vite + localStorage</p>
           <p>🎨 UI inspired by Modern Task Calendar Dashboard (Figma Freebie)</p>
-          <p>🔒 Tất cả dữ liệu được lưu local trên trình duyệt của bạn</p>
+          <p>🔒 All data is stored locally in your browser</p>
           <p>🌐 Hosted on GitHub Pages</p>
         </div>
       </div>
@@ -114,7 +114,7 @@ export default function SettingsPage() {
       <div className="card" style={{ border: '1px solid rgba(255,71,87,0.3)' }}>
         <div className="fs-16 fw-700 mb-4" style={{ color: '#FF4757' }}>⚠️ Danger Zone</div>
         <div className="fs-13 text-secondary mb-12">
-          Xóa toàn bộ dữ liệu (tasks, events, sessions). Không thể hoàn tác!
+          Delete all data (tasks, events, sessions). Cannot be undone!
         </div>
         <button
           onClick={handleClearData}
@@ -122,7 +122,7 @@ export default function SettingsPage() {
           style={{ background: 'rgba(255,71,87,0.1)', color: '#FF4757', border: '1px solid rgba(255,71,87,0.3)' }}
           id="clear-data-btn"
         >
-          🗑️ Xóa tất cả dữ liệu
+          🗑️ Delete all data
         </button>
       </div>
     </div>

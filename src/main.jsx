@@ -25,8 +25,8 @@ class ErrorBoundary extends React.Component {
     if (this.state.hasError) {
       return (
         <div style={{ padding: '24px', fontFamily: 'sans-serif', color: '#FF4757', background: '#FFF0F0', minHeight: '100vh' }}>
-          <h2>Oops! Ứng dụng gặp lỗi khi khởi tạo.</h2>
-          <p>Mã lỗi chi tiết:</p>
+          <h2>Oops! The application encountered an error during initialization.</h2>
+          <p>Detailed error code:</p>
           <pre style={{ background: 'white', padding: '16px', borderRadius: '8px', overflowX: 'auto', border: '1px solid #FFCDD2', color: '#333' }}>
             {this.state.error && this.state.error.toString()}
             {'\n'}
@@ -36,7 +36,7 @@ class ErrorBoundary extends React.Component {
             onClick={() => { localStorage.clear(); window.location.reload(); }}
             style={{ marginTop: 20, padding: '10px 20px', background: '#FF4757', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer' }}
           >
-            Xóa dữ liệu & Tải lại trang
+            Clear Data & Reload Page
           </button>
         </div>
       );

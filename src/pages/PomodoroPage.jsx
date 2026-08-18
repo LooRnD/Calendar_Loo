@@ -41,8 +41,8 @@ function SettingsModal({ isOpen, onClose }) {
     <div className="modal-overlay" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="modal" style={{ maxWidth: 420 }}>
         <div className="flex items-center justify-between mb-20">
-          <h2 className="modal-title" style={{ margin: 0 }}>⚙️ Cài đặt Pomodoro</h2>
-          <button className="modal-close" onClick={onClose} aria-label="Đóng" style={{ position: 'static' }}>
+          <h2 className="modal-title" style={{ margin: 0 }}>⚙️ Pomodoro Settings</h2>
+          <button className="modal-close" onClick={onClose} aria-label="Close" style={{ position: 'static' }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
             </svg>
@@ -50,10 +50,10 @@ function SettingsModal({ isOpen, onClose }) {
         </div>
         <form onSubmit={handleSave}>
           {[
-            { key: 'workDuration', label: '🍅 Thời gian làm việc (phút)', min: 5, max: 90 },
-            { key: 'shortBreak', label: '☕ Nghỉ ngắn (phút)', min: 1, max: 30 },
-            { key: 'longBreak', label: '🌴 Nghỉ dài (phút)', min: 5, max: 60 },
-            { key: 'cyclesBeforeLong', label: '🔄 Số cycles trước nghỉ dài', min: 2, max: 8 },
+            { key: 'workDuration', label: '🍅 Work Duration (minutes)', min: 5, max: 90 },
+            { key: 'shortBreak', label: '☕ Short Break (minutes)', min: 1, max: 30 },
+            { key: 'longBreak', label: '🌴 Long Break (minutes)', min: 5, max: 60 },
+            { key: 'cyclesBeforeLong', label: '🔄 Cycles before long break', min: 2, max: 8 },
           ].map(({ key, label, min, max }) => (
             <div className="form-group" key={key}>
               <label className="form-label">{label}: <strong>{form[key]}</strong></label>
@@ -65,9 +65,9 @@ function SettingsModal({ isOpen, onClose }) {
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
             {[
-              { key: 'autoStartBreak', label: '⚡ Tự động bắt đầu nghỉ' },
-              { key: 'autoStartWork', label: '🔄 Tự động bắt đầu làm' },
-              { key: 'soundEnabled', label: '🔔 Âm thanh thông báo' },
+              { key: 'autoStartBreak', label: '⚡ Auto-start break' },
+              { key: 'autoStartWork', label: '🔄 Auto-start work' },
+              { key: 'soundEnabled', label: '🔔 Notification sound' },
             ].map(({ key, label }) => (
               <label key={key} className="flex items-center gap-8" style={{ cursor: 'pointer' }}>
                 <input type="checkbox" checked={form[key]}
@@ -79,8 +79,8 @@ function SettingsModal({ isOpen, onClose }) {
           </div>
 
           <div className="flex gap-8" style={{ justifyContent: 'flex-end' }}>
-            <button type="button" className="btn btn-ghost" onClick={onClose}>Hủy</button>
-            <button type="submit" className="btn btn-primary">Lưu cài đặt</button>
+            <button type="button" className="btn btn-ghost" onClick={onClose}>Cancel</button>
+            <button type="submit" className="btn btn-primary">Save settings</button>
           </div>
         </form>
       </div>
@@ -195,7 +195,7 @@ export default function PomodoroPage() {
           onClick={() => setFocusMode(false)}
           style={{ position: 'absolute', top: 24, right: 24, background: 'rgba(255,255,255,0.1)', border: 'none', color: 'white', padding: '8px 16px', borderRadius: 8, cursor: 'pointer', fontSize: 13 }}
         >
-          ✕ Thoát Focus Mode
+          ✕ Exit Focus Mode
         </button>
         {linkedTask && (
           <div style={{ marginBottom: 20, fontSize: 16, color: 'rgba(255,255,255,0.7)' }}>
@@ -204,7 +204,7 @@ export default function PomodoroPage() {
         )}
         {timerContent}
         <div style={{ marginTop: 16, color: 'rgba(255,255,255,0.5)', fontSize: 13 }}>
-          Nhấn Space để Start/Pause
+          Press Space to Start/Pause
         </div>
       </div>
     );
@@ -216,7 +216,7 @@ export default function PomodoroPage() {
         <div>
           <h1 className="fs-24 fw-700 text-primary">🍅 Pomodoro Timer</h1>
           <p className="text-secondary fs-13" style={{ marginTop: 4 }}>
-            {completedToday} sessions · {totalFocusMin} phút tập trung hôm nay
+            {completedToday} sessions · {totalFocusMin} minutes focused today
           </p>
         </div>
         <div className="flex gap-8">
@@ -236,7 +236,7 @@ export default function PomodoroPage() {
 
           {/* Link Task */}
           <div style={{ width: '100%', borderTop: '1px solid var(--border)', paddingTop: 20 }}>
-            <div className="form-label mb-8">📌 Task đang làm</div>
+            <div className="form-label mb-8">📌 Current task</div>
             <select
               className="form-input form-select"
               value={linkedTask?.id || ''}
@@ -246,7 +246,7 @@ export default function PomodoroPage() {
               }}
               id="pomodoro-task-select"
             >
-              <option value="">— Không liên kết task —</option>
+              <option value="">— No linked task —</option>
               {activeTasks.map(t => (
                 <option key={t.id} value={t.id}>{t.title}</option>
               ))}
@@ -258,12 +258,12 @@ export default function PomodoroPage() {
         <div className="flex-col gap-16">
           {/* Stats */}
           <div className="card">
-            <div className="fs-14 fw-600 mb-16">📊 Hôm nay</div>
+            <div className="fs-14 fw-600 mb-16">📊 Today</div>
             {[
-              { label: '🍅 Sessions hoàn thành', value: completedToday },
-              { label: '⏱️ Tổng tập trung', value: `${totalFocusMin} phút` },
-              { label: '☕ Nghỉ ngắn', value: todaySessions.filter(s => s.type === 'short_break').length },
-              { label: '🌴 Nghỉ dài', value: todaySessions.filter(s => s.type === 'long_break').length },
+              { label: '🍅 Sessions completed', value: completedToday },
+              { label: '⏱️ Total focus', value: `${totalFocusMin} minutes` },
+              { label: '☕ Short Break', value: todaySessions.filter(s => s.type === 'short_break').length },
+              { label: '🌴 Long Break', value: todaySessions.filter(s => s.type === 'long_break').length },
             ].map(({ label, value }) => (
               <div key={label} className="flex items-center justify-between" style={{ padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
                 <span className="fs-13 text-secondary">{label}</span>
@@ -274,10 +274,10 @@ export default function PomodoroPage() {
 
           {/* Recent sessions */}
           <div className="card" style={{ flex: 1 }}>
-            <div className="fs-14 fw-600 mb-12">📋 Lịch sử hôm nay</div>
+            <div className="fs-14 fw-600 mb-12">📋 History today</div>
             {todaySessions.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '20px 0', color: 'var(--text-muted)', fontSize: 13 }}>
-                Chưa có session nào
+                No sessions yet
               </div>
             ) : (
               [...todaySessions].reverse().slice(0, 8).map(s => (
@@ -290,7 +290,7 @@ export default function PomodoroPage() {
                       {s.type === 'work' ? 'Focus' : s.type === 'short_break' ? 'Short Break' : 'Long Break'}
                       {s.taskTitle && <span style={{ color: 'var(--text-muted)' }}> · {s.taskTitle}</span>}
                     </div>
-                    <div className="fs-11 text-muted">{s.durationMin} phút · {new Date(s.startedAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</div>
+                    <div className="fs-11 text-muted">{s.durationMin} minutes · {new Date(s.startedAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</div>
                   </div>
                   <span style={{ fontSize: 11, color: s.completed ? '#52C41A' : 'var(--text-muted)' }}>
                     {s.completed ? '✓' : '○'}

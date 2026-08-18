@@ -25,7 +25,7 @@ export function AppProvider({ children }) {
   const createTask = useCallback((task) => {
     const t = store.addTask(task);
     setTasks(store.getTasks());
-    addToast('Task đã được tạo!', 'success');
+    addToast('Task created!', 'success');
     return t;
   }, [addToast]);
 
@@ -41,14 +41,14 @@ export function AppProvider({ children }) {
   const removeTask = useCallback((id) => {
     store.deleteTask(id);
     setTasks(store.getTasks());
-    addToast('Task đã xóa', 'info');
+    addToast('Task deleted', 'info');
   }, [addToast]);
 
   // Events
   const createEvent = useCallback((event) => {
     const e = store.addEvent(event);
     setEvents(store.getEvents());
-    addToast('Sự kiện đã được tạo!', 'success');
+    addToast('Event created!', 'success');
     return e;
   }, [addToast]);
 
@@ -60,14 +60,14 @@ export function AppProvider({ children }) {
   const removeEvent = useCallback((id) => {
     store.deleteEvent(id);
     setEvents(store.getEvents());
-    addToast('Sự kiện đã xóa', 'info');
+    addToast('Event deleted', 'info');
   }, [addToast]);
 
   // Pomodoro
   const saveSettings = useCallback((settings) => {
     store.savePomodoroSettings(settings);
     setPomodoroSettings(store.getPomodoroSettings());
-    addToast('Cài đặt đã lưu!', 'success');
+    addToast('Settings saved!', 'success');
   }, [addToast]);
 
   const logPomodoroSession = useCallback((session) => {
@@ -87,7 +87,7 @@ export function AppProvider({ children }) {
   const saveUser = useCallback((settings) => {
     store.saveUserSettings(settings);
     setUserSettings(store.getUserSettings());
-    addToast('Hồ sơ đã lưu!', 'success');
+    addToast('Profile saved!', 'success');
   }, [addToast]);
 
   const value = {

@@ -99,7 +99,7 @@ export default function Sidebar() {
         <button
           className="sidebar-add-btn"
           onClick={() => navigate('/tasks')}
-          title="Tạo task mới"
+          title="Create new task"
         >
           +
         </button>

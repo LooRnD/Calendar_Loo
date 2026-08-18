@@ -256,10 +256,10 @@ export function seedDefaultTasks() {
   const existing = getTasks();
   if (existing.length > 0) return;
   const defaultTasks = [
-    { title: 'Thiết kế giao diện app', priority: 'high', status: 'in_progress', category: 'Design', categoryColor: '#FF6B35', progress: 60, tags: ['UI', 'Design'], dueDate: new Date().toISOString() },
+    { title: 'Design app UI', priority: 'high', status: 'in_progress', category: 'Design', categoryColor: '#FF6B35', progress: 60, tags: ['UI', 'Design'], dueDate: new Date().toISOString() },
     { title: 'Review code pull request', priority: 'medium', status: 'todo', category: 'Development', categoryColor: '#6C60E0', progress: 20, tags: ['Dev', 'PR'] },
-    { title: 'Viết báo cáo tuần', priority: 'low', status: 'todo', category: 'Personal', categoryColor: '#52C41A', progress: 0, tags: ['Writing'] },
-    { title: 'Cập nhật documentation', priority: 'low', status: 'done', category: 'Development', categoryColor: '#6C60E0', progress: 100, tags: ['Docs'] },
+    { title: 'Write weekly report', priority: 'low', status: 'todo', category: 'Personal', categoryColor: '#52C41A', progress: 0, tags: ['Writing'] },
+    { title: 'Update documentation', priority: 'low', status: 'done', category: 'Development', categoryColor: '#6C60E0', progress: 100, tags: ['Docs'] },
   ];
   defaultTasks.forEach(t => addTask(t));
 }

@@ -17,7 +17,7 @@ function MiniPomodoro({ onNavigate }) {
       <div className="flex items-center justify-between mb-12">
         <div className="fs-14 fw-600">🍅 Pomodoro</div>
         <button className="fs-12 text-secondary" onClick={onNavigate}
-          style={{ background: 'none', border: 'none', cursor: 'pointer' }}>Mở →</button>
+          style={{ background: 'none', border: 'none', cursor: 'pointer' }}>Open →</button>
       </div>
       <div className="flex items-center gap-16">
         <div style={{ position: 'relative', width: 90, height: 90 }}>
@@ -75,8 +75,8 @@ export default function DashboardPage() {
   const completionRate = totalTasks > 0 ? Math.round((completedToday / totalTasks) * 100) : 0;
 
   const projectCards = [
-    { title: 'Tạo task mới', subtitle: 'Bắt đầu ngay!', color: 'teal', icon: '✅', action: () => navigate('/tasks') },
-    { title: 'Pomodoro Timer', subtitle: 'Tập trung nào!', color: 'purple', icon: '🍅', action: () => navigate('/pomodoro') },
+    { title: 'Create new task', subtitle: 'Start Date now!', color: 'teal', icon: '✅', action: () => navigate('/tasks') },
+    { title: 'Pomodoro Timer', subtitle: "Let's focus!", color: 'purple', icon: '🍅', action: () => navigate('/pomodoro') },
   ];
 
   return (
@@ -97,7 +97,7 @@ export default function DashboardPage() {
             </div>
           </div>
           <p className="text-secondary fs-13">
-            Chào buổi {today.hour() < 12 ? 'sáng' : today.hour() < 18 ? 'chiều' : 'tối'}, {userSettings.name.split(' ')[0]}! 👋
+            Good {today.hour() < 12 ? 'morning' : today.hour() < 18 ? 'afternoon' : 'evening'}, {userSettings.name.split(' ')[0]}! 👋
           </p>
         </div>
 
@@ -116,7 +116,7 @@ export default function DashboardPage() {
 
         {/* Today's tasks */}
         <div className="section-header mb-12">
-          <h2 className="section-title">Tasks Hôm Nay</h2>
+          <h2 className="section-title">Today's Tasks</h2>
           <div className="section-actions">
             <button className="btn btn-ghost" onClick={() => navigate('/tasks')}>Archive</button>
             <button className="btn btn-primary" onClick={() => navigate('/tasks')} id="dashboard-new-task-btn">+ New</button>
@@ -127,14 +127,14 @@ export default function DashboardPage() {
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
           </svg>
-          <input className="search-input" placeholder="Tìm kiếm tasks..." readOnly
+          <input className="search-input" placeholder="Search tasks..." readOnly
             onClick={() => navigate('/tasks')} />
         </div>
 
         {pendingTasks.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
             <div style={{ fontSize: 40, marginBottom: 8 }}>🎉</div>
-            <div className="fs-14 fw-600">Tất cả tasks đã hoàn thành!</div>
+            <div className="fs-14 fw-600">All tasks completed!</div>
           </div>
         ) : (
           pendingTasks.map((task) => {
@@ -149,7 +149,7 @@ export default function DashboardPage() {
                 <div className="task-info">
                   <div className="task-title">{task.title}</div>
                   <div className="task-meta">
-                    {task.category} · {task.status === 'in_progress' ? 'Đang làm' : 'Chưa làm'}
+                    {task.category} · {task.status === 'in_progress' ? 'In Progress' : 'To Do'}
                     {task.dueDate && ` · ${dayjs(task.dueDate).format('DD/MM')}`}
                   </div>
                 </div>
@@ -165,8 +165,8 @@ export default function DashboardPage() {
         {/* Bottom stats */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginTop: 24 }}>
           {[
-            { label: 'Productivity Streak', value: streak, unit: 'ngày 🔥', color: '#FF6B35' },
-            { label: 'Focus Time', value: todayStats.focusMinutes || 0, unit: 'phút ⏱️', color: '#6C60E0' },
+            { label: 'Productivity Streak', value: streak, unit: 'days 🔥', color: '#FF6B35' },
+            { label: 'Focus Time', value: todayStats.focusMinutes || 0, unit: 'minutes ⏱️', color: '#6C60E0' },
             { label: 'Completion Rate', value: `${completionRate}%`, unit: 'Tasks ✅', color: '#52C41A' },
           ].map(({ label, value, unit, color }) => (
             <div key={label} className="stat-card">
@@ -198,7 +198,7 @@ export default function DashboardPage() {
         {upcomingEvents.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '20px 0', color: 'var(--text-muted)', fontSize: 13 }}>
             <div style={{ fontSize: 32, marginBottom: 6 }}>📅</div>
-            Không có sự kiện sắp tới
+            No upcoming events
           </div>
         ) : (
           (() => {

@@ -67,7 +67,7 @@ export default function AnalyticsPage() {
         <div>
           <h1 className="fs-24 fw-700 text-primary">📊 Analytics</h1>
           <p className="text-secondary fs-13" style={{ marginTop: 4 }}>
-            Tổng quan năng suất cá nhân
+            Personal productivity overview
           </p>
         </div>
       </div>
@@ -75,10 +75,10 @@ export default function AnalyticsPage() {
       {/* KPI Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 24 }}>
         {[
-          { icon: '🔥', label: 'Streak', value: `${streak} ngày`, color: '#FF6B35', sub: 'Liên tiếp' },
-          { icon: '⏱️', label: 'Focus Time', value: `${Math.round(totalFocusMin / 60 * 10) / 10}h`, color: '#6C60E0', sub: 'Tổng cộng' },
+          { icon: '🔥', label: 'Streak', value: `${streak} days`, color: '#FF6B35', sub: 'Consecutive' },
+          { icon: '⏱️', label: 'Focus Time', value: `${Math.round(totalFocusMin / 60 * 10) / 10}h`, color: '#6C60E0', sub: 'Total' },
           { icon: '🍅', label: 'Pomodoros', value: totalSessions, color: '#FF4757', sub: 'Sessions' },
-          { icon: '✅', label: 'Hoàn thành', value: `${completionRate}%`, color: '#52C41A', sub: 'Task rate' },
+          { icon: '✅', label: 'Done', value: `${completionRate}%`, color: '#52C41A', sub: 'Task rate' },
         ].map(({ icon, label, value, color, sub }) => (
           <div key={label} className="card" style={{ textAlign: 'center' }}>
             <div style={{ fontSize: 28, marginBottom: 6 }}>{icon}</div>
@@ -92,13 +92,13 @@ export default function AnalyticsPage() {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
         {/* Focus time bar chart */}
         <div className="card">
-          <div className="fs-14 fw-600 mb-16">⏱️ Thời gian tập trung (7 ngày)</div>
+          <div className="fs-14 fw-600 mb-16">⏱️ Focus time (7 days)</div>
           <ResponsiveContainer width="100%" height={180}>
             <BarChart data={last7} barSize={20}>
               <CartesianGrid strokeDasharray="3 3" stroke="#E8EDF5" vertical={false} />
               <XAxis dataKey="day" tick={{ fontSize: 11, fill: '#8892A4' }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fontSize: 11, fill: '#8892A4' }} axisLine={false} tickLine={false} unit="m" />
-              <Tooltip contentStyle={customTooltipStyle} formatter={(v) => [`${v} phút`, 'Focus']} />
+              <Tooltip contentStyle={customTooltipStyle} formatter={(v) => [`${v} minutes`, 'Focus']} />
               <Bar dataKey="focus" fill="#6C60E0" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
@@ -106,7 +106,7 @@ export default function AnalyticsPage() {
 
         {/* Task completion line chart */}
         <div className="card">
-          <div className="fs-14 fw-600 mb-16">✅ Tasks hoàn thành (7 ngày)</div>
+          <div className="fs-14 fw-600 mb-16">✅ Tasks completed (7 days)</div>
           <ResponsiveContainer width="100%" height={180}>
             <LineChart data={last7}>
               <CartesianGrid strokeDasharray="3 3" stroke="#E8EDF5" vertical={false} />
@@ -124,7 +124,7 @@ export default function AnalyticsPage() {
         {/* Activity Heatmap */}
         <div className="card">
           <div className="flex items-center justify-between mb-16">
-            <div className="fs-14 fw-600">📅 Heatmap Activity (5 tuần)</div>
+            <div className="fs-14 fw-600">📅 Activity Heatmap (5 weeks)</div>
             <div className="flex gap-4 items-center">
               <span className="fs-11 text-muted">Ít</span>
               {[0, 1, 2, 3, 4].map(l => (
@@ -137,7 +137,7 @@ export default function AnalyticsPage() {
                     : '#6C60E0',
                 }} />
               ))}
-              <span className="fs-11 text-muted">Nhiều</span>
+              <span className="fs-11 text-muted">Many</span>
             </div>
           </div>
           <div className="heatmap-grid" style={{ gridTemplateColumns: 'repeat(7, 1fr)', gap: 4 }}>
@@ -176,7 +176,7 @@ export default function AnalyticsPage() {
             </>
           ) : (
             <div style={{ textAlign: 'center', padding: '20px 0', color: 'var(--text-muted)', fontSize: 13 }}>
-              Chưa có task hoàn thành
+              No completed tasks
             </div>
           )}
         </div>
@@ -185,7 +185,7 @@ export default function AnalyticsPage() {
       {/* Category breakdown */}
       {categoryData.length > 0 && (
         <div className="card">
-          <div className="fs-14 fw-600 mb-16">🗂️ Tiến độ theo Category</div>
+          <div className="fs-14 fw-600 mb-16">🗂️ Progress theo Category</div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 16 }}>
             {categoryData.map(({ name, total, done, color }) => (
               <div key={name}>

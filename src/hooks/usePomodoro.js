@@ -9,9 +9,9 @@ const PHASES = {
 };
 
 const PHASE_LABELS = {
-  work: '🍅 Tập trung',
-  short_break: '☕ Nghỉ ngắn',
-  long_break: '🌴 Nghỉ dài',
+  work: '🍅 Focus',
+  short_break: '☕ Short Break',
+  long_break: '🌴 Long Break',
 };
 
 const PHASE_COLORS = {
@@ -102,7 +102,7 @@ export function usePomodoro() {
     }
 
     const label = PHASE_LABELS[nextPhase];
-    addToast(`${label} bắt đầu!`, 'info');
+    addToast(`${label} started!`, 'info');
 
     setPhase(nextPhase);
     setCycle(nextCycle);
