@@ -80,20 +80,6 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      <div className="sidebar-divider" />
-
-      <div className="sidebar-group">
-        <div className="sidebar-group-header">
-          <div className="sidebar-group-avatar"
-            style={{ background: userSettings.avatarColor || '#6C60E0' }}>
-            {initials}
-          </div>
-          <span>{userSettings.name}</span>
-        </div>
-        {['Workspace', 'Projects', 'Archive', 'Goals'].map(item => (
-          <div key={item} className="sidebar-subitem">{item}</div>
-        ))}
-      </div>
 
       <div className="sidebar-footer">
         <button

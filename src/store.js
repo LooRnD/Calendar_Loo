@@ -223,14 +223,21 @@ export function getStreakCount() {
 
 /* ============ USER SETTINGS ============ */
 const DEFAULT_USER_SETTINGS = {
-  name: 'Your Name',
+  name: 'Loo',
   role: 'Personal',
-  avatarInitials: 'YN',
+  avatarInitials: 'L',
   avatarColor: '#6C60E0',
 };
 
 export function getUserSettings() {
-  return { ...DEFAULT_USER_SETTINGS, ...getItem(KEYS.USER_SETTINGS, {}) };
+  const settings = { ...DEFAULT_USER_SETTINGS, ...getItem(KEYS.USER_SETTINGS, {}) };
+  // Migrate from old default 'Your Name' to 'Loo'
+  if (settings.name === 'Your Name') {
+    settings.name = 'Loo';
+    settings.avatarInitials = 'L';
+    saveUserSettings(settings);
+  }
+  return settings;
 }
 
 export function saveUserSettings(settings) {
