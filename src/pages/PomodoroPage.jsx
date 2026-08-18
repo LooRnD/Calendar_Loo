@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { usePomodoro } from '../hooks/usePomodoro.js';
 import { useApp } from '../context/AppContext.jsx';
 
@@ -113,6 +113,15 @@ export default function PomodoroPage() {
     start, pause, reset, skip,
     formatTime, phaseLabel, phaseColor, PHASES,
   } = usePomodoro();
+
+  const playerRef = useRef(null);
+
+  useEffect(() => {
+    if (playerRef.current && playerRef.current.contentWindow) {
+      const func = running ? 'playVideo' : 'pauseVideo';
+      playerRef.current.contentWindow.postMessage(JSON.stringify({ event: 'command', func, args: [] }), '*');
+    }
+  }, [running]);
 
   const activeTasks = tasks.filter(t => t.status !== 'done');
   const todaySessions = pomodoroSessions.filter(s => {
@@ -272,9 +281,10 @@ export default function PomodoroPage() {
               <span className="fs-12 text-muted">Lofi Hip Hop</span>
             </div>
             <iframe 
+              ref={playerRef}
               width="100%" 
               height="80" 
-              src={`https://www.youtube.com/embed/${videoId}?autoplay=0&controls=1`} 
+              src={`https://www.youtube.com/embed/${videoId}?autoplay=0&controls=1&enablejsapi=1`} 
               title="Background Music" 
               frameBorder="0" 
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
