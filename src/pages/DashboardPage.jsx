@@ -47,7 +47,7 @@ function MiniPomodoro({ onNavigate }) {
 }
 
 export default function DashboardPage() {
-  const { tasks, events, userSettings } = useApp();
+  const { tasks, events, userSettings, editTask } = useApp();
   const navigate = useNavigate();
   const today = dayjs();
   const todayStats = getTodayStats();
@@ -142,8 +142,24 @@ export default function DashboardPage() {
             const icon = icons[task.category] || '📌';
             return (
               <div key={task.id} className="task-item" onClick={() => navigate('/tasks')}>
+                <button 
+                  onClick={(e) => { 
+                    e.stopPropagation(); 
+                    editTask(task.id, { status: task.status === 'done' ? 'todo' : 'done' });
+                  }}
+                  title={task.status === 'done' ? 'Mark as Todo' : 'Mark as Done'}
+                  style={{
+                    width: 22, height: 22, borderRadius: '50%', padding: 0,
+                    border: `2px solid ${task.status === 'done' ? '#52C41A' : 'var(--border)'}`,
+                    background: task.status === 'done' ? '#52C41A' : 'transparent',
+                    marginRight: 12, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    cursor: 'pointer', flexShrink: 0
+                  }}
+                >
+                  {task.status === 'done' && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>}
+                </button>
                 <div className="task-icon"
-                  style={{ background: (task.categoryColor || '#6C60E0') + '20', color: task.categoryColor || '#6C60E0' }}>
+                  style={{ background: (task.categoryColor || '#6C60E0') + '20', color: task.categoryColor || '#6C60E0', marginLeft: 0 }}>
                   <span style={{ fontSize: 16 }}>{icon}</span>
                 </div>
                 <div className="task-info">
