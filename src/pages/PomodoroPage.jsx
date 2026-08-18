@@ -187,10 +187,10 @@ export default function PomodoroPage() {
     </div>
   );
 
-  // Focus Mode Overlay
-  if (focusMode) {
-    return (
-      <div className="focus-mode-overlay">
+  return (
+    <>
+      {/* Focus Mode Overlay */}
+      <div className="focus-mode-overlay" style={{ display: focusMode ? 'flex' : 'none', zIndex: 100 }}>
         <button
           onClick={() => setFocusMode(false)}
           style={{ position: 'absolute', top: 24, right: 24, background: 'rgba(255,255,255,0.1)', border: 'none', color: 'white', padding: '8px 16px', borderRadius: 8, cursor: 'pointer', fontSize: 13 }}
@@ -207,12 +207,10 @@ export default function PomodoroPage() {
           Press Space to Start/Pause
         </div>
       </div>
-    );
-  }
 
-  return (
-    <div className="page-enter">
-      <div className="section-header mb-24">
+      {/* Main Page */}
+      <div className="page-enter" style={{ display: focusMode ? 'none' : 'block' }}>
+        <div className="section-header mb-24">
         <div>
           <h1 className="fs-24 fw-700 text-primary">🍅 Pomodoro Timer</h1>
           <p className="text-secondary fs-13" style={{ marginTop: 4 }}>
@@ -251,6 +249,24 @@ export default function PomodoroPage() {
                 <option key={t.id} value={t.id}>{t.title}</option>
               ))}
             </select>
+          </div>
+
+          {/* Background Music */}
+          <div style={{ width: '100%', borderTop: '1px solid var(--border)', paddingTop: 20, marginTop: 20 }}>
+            <div className="flex items-center justify-between mb-8">
+              <div className="form-label mb-0">🎧 Background Music</div>
+              <span className="fs-12 text-muted">Lofi Hip Hop</span>
+            </div>
+            <iframe 
+              width="100%" 
+              height="80" 
+              src="https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=0&controls=1" 
+              title="Lofi Girl" 
+              frameBorder="0" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+              allowFullScreen
+              style={{ borderRadius: 8, background: '#1e1e2e' }}
+            ></iframe>
           </div>
         </div>
 
@@ -304,5 +320,6 @@ export default function PomodoroPage() {
 
       <SettingsModal isOpen={showSettings} onClose={() => setShowSettings(false)} />
     </div>
+    </>
   );
 }
