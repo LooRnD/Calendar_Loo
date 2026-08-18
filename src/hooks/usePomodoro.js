@@ -39,12 +39,17 @@ export function usePomodoro() {
     return s.longBreak * 60;
   }, [settings]);
 
+  const prevSettingsRef = useRef(settings);
+
   // Sync when settings change
   useEffect(() => {
-    if (!running) {
-      const dur = getDuration(phase, settings);
-      setTimeLeft(dur);
-      setTotalTime(dur);
+    if (prevSettingsRef.current !== settings) {
+      prevSettingsRef.current = settings;
+      if (!running) {
+        const dur = getDuration(phase, settings);
+        setTimeLeft(dur);
+        setTotalTime(dur);
+      }
     }
   }, [settings, phase, running, getDuration]);
 
