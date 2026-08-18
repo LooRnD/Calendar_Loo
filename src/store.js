@@ -26,6 +26,14 @@ function setItem(key, value) {
   localStorage.setItem(key, JSON.stringify(value));
 }
 
+// Safe UUID generator in case crypto.randomUUID is not available
+function generateId() {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+}
+
 /* ============ TASKS ============ */
 export function getTasks() {
   return getItem(KEYS.TASKS, []);
@@ -38,7 +46,7 @@ export function saveTasks(tasks) {
 export function addTask(task) {
   const tasks = getTasks();
   const newTask = {
-    id: crypto.randomUUID(),
+    id: generateId(),
     title: '',
     description: '',
     priority: 'medium',
@@ -84,7 +92,7 @@ export function saveEvents(events) {
 export function addEvent(event) {
   const events = getEvents();
   const newEvent = {
-    id: crypto.randomUUID(),
+    id: generateId(),
     title: '',
     description: '',
     startDate: new Date().toISOString(),
@@ -143,7 +151,7 @@ export function getPomodoroSessions() {
 export function addPomodoroSession(session) {
   const sessions = getPomodoroSessions();
   const newSession = {
-    id: crypto.randomUUID(),
+    id: generateId(),
     type: 'work', // 'work' | 'short_break' | 'long_break'
     durationMin: 25,
     taskId: null,
@@ -236,11 +244,11 @@ function getDefaultEvents() {
   const addDays = (n) => { const d = new Date(today); d.setDate(d.getDate() + n); return d; };
 
   return [
-    { id: crypto.randomUUID(), title: 'Morning Standup', category: 'Work', color: '#6C60E0', startDate: fmt(today), endDate: null, allDay: false, description: '' },
-    { id: crypto.randomUUID(), title: 'Design Review', category: 'Design', color: '#FF6B35', startDate: fmt(addDays(1)), endDate: null, allDay: false, description: '' },
-    { id: crypto.randomUUID(), title: 'Focus Session', category: 'Personal', color: '#52C41A', startDate: fmt(addDays(2)), endDate: null, allDay: false, description: '' },
-    { id: crypto.randomUUID(), title: 'Team Meeting', category: 'Work', color: '#FF4757', startDate: fmt(addDays(3)), endDate: null, allDay: false, description: '' },
-    { id: crypto.randomUUID(), title: 'Learning React', category: 'Education', color: '#4FD1C5', startDate: fmt(addDays(5)), endDate: null, allDay: true, description: '' },
+    { id: generateId(), title: 'Morning Standup', category: 'Work', color: '#6C60E0', startDate: fmt(today), endDate: null, allDay: false, description: '' },
+    { id: generateId(), title: 'Design Review', category: 'Design', color: '#FF6B35', startDate: fmt(addDays(1)), endDate: null, allDay: false, description: '' },
+    { id: generateId(), title: 'Focus Session', category: 'Personal', color: '#52C41A', startDate: fmt(addDays(2)), endDate: null, allDay: false, description: '' },
+    { id: generateId(), title: 'Team Meeting', category: 'Work', color: '#FF4757', startDate: fmt(addDays(3)), endDate: null, allDay: false, description: '' },
+    { id: generateId(), title: 'Learning React', category: 'Education', color: '#4FD1C5', startDate: fmt(addDays(5)), endDate: null, allDay: true, description: '' },
   ];
 }
 
