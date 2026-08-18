@@ -1,0 +1,257 @@
+// Storage keys
+const KEYS = {
+  TASKS: 'cloo_tasks',
+  EVENTS: 'cloo_events',
+  POMODORO_SESSIONS: 'cloo_pomodoro_sessions',
+  POMODORO_SETTINGS: 'cloo_pomodoro_settings',
+  DAILY_STATS: 'cloo_daily_stats',
+  USER_SETTINGS: 'cloo_user_settings',
+};
+
+// Safe JSON parse
+function safeParse(raw, fallback) {
+  try {
+    return raw ? JSON.parse(raw) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+// Generic storage helpers
+function getItem(key, fallback) {
+  return safeParse(localStorage.getItem(key), fallback);
+}
+
+function setItem(key, value) {
+  localStorage.setItem(key, JSON.stringify(value));
+}
+
+/* ============ TASKS ============ */
+export function getTasks() {
+  return getItem(KEYS.TASKS, []);
+}
+
+export function saveTasks(tasks) {
+  setItem(KEYS.TASKS, tasks);
+}
+
+export function addTask(task) {
+  const tasks = getTasks();
+  const newTask = {
+    id: crypto.randomUUID(),
+    title: '',
+    description: '',
+    priority: 'medium',
+    status: 'todo',
+    category: 'General',
+    categoryColor: '#6C60E0',
+    tags: [],
+    dueDate: null,
+    progress: 0,
+    createdAt: new Date().toISOString(),
+    ...task,
+  };
+  tasks.push(newTask);
+  saveTasks(tasks);
+  return newTask;
+}
+
+export function updateTask(id, updates) {
+  const tasks = getTasks();
+  const idx = tasks.findIndex(t => t.id === id);
+  if (idx !== -1) {
+    tasks[idx] = { ...tasks[idx], ...updates };
+    saveTasks(tasks);
+    return tasks[idx];
+  }
+  return null;
+}
+
+export function deleteTask(id) {
+  const tasks = getTasks().filter(t => t.id !== id);
+  saveTasks(tasks);
+}
+
+/* ============ EVENTS (Calendar) ============ */
+export function getEvents() {
+  return getItem(KEYS.EVENTS, getDefaultEvents());
+}
+
+export function saveEvents(events) {
+  setItem(KEYS.EVENTS, events);
+}
+
+export function addEvent(event) {
+  const events = getEvents();
+  const newEvent = {
+    id: crypto.randomUUID(),
+    title: '',
+    description: '',
+    startDate: new Date().toISOString(),
+    endDate: null,
+    color: '#6C60E0',
+    category: 'General',
+    allDay: false,
+    ...event,
+  };
+  events.push(newEvent);
+  saveEvents(events);
+  return newEvent;
+}
+
+export function updateEvent(id, updates) {
+  const events = getEvents();
+  const idx = events.findIndex(e => e.id === id);
+  if (idx !== -1) {
+    events[idx] = { ...events[idx], ...updates };
+    saveEvents(events);
+    return events[idx];
+  }
+  return null;
+}
+
+export function deleteEvent(id) {
+  const events = getEvents().filter(e => e.id !== id);
+  saveEvents(events);
+}
+
+/* ============ POMODORO SETTINGS ============ */
+const DEFAULT_POMODORO_SETTINGS = {
+  workDuration: 25,
+  shortBreak: 5,
+  longBreak: 15,
+  cyclesBeforeLong: 4,
+  autoStartBreak: false,
+  autoStartWork: false,
+  soundEnabled: true,
+  soundType: 'bell',
+};
+
+export function getPomodoroSettings() {
+  return { ...DEFAULT_POMODORO_SETTINGS, ...getItem(KEYS.POMODORO_SETTINGS, {}) };
+}
+
+export function savePomodoroSettings(settings) {
+  setItem(KEYS.POMODORO_SETTINGS, settings);
+}
+
+/* ============ POMODORO SESSIONS ============ */
+export function getPomodoroSessions() {
+  return getItem(KEYS.POMODORO_SESSIONS, []);
+}
+
+export function addPomodoroSession(session) {
+  const sessions = getPomodoroSessions();
+  const newSession = {
+    id: crypto.randomUUID(),
+    type: 'work', // 'work' | 'short_break' | 'long_break'
+    durationMin: 25,
+    taskId: null,
+    taskTitle: null,
+    startedAt: new Date().toISOString(),
+    completedAt: null,
+    completed: false,
+    ...session,
+  };
+  sessions.push(newSession);
+  setItem(KEYS.POMODORO_SESSIONS, sessions);
+  return newSession;
+}
+
+/* ============ DAILY STATS ============ */
+export function getDailyStats() {
+  return getItem(KEYS.DAILY_STATS, []);
+}
+
+export function getTodayStats() {
+  const today = new Date().toISOString().split('T')[0];
+  const stats = getDailyStats();
+  return stats.find(s => s.date === today) || {
+    date: today,
+    focusMinutes: 0,
+    tasksCompleted: 0,
+    pomodorosCompleted: 0,
+    streakCount: 0,
+  };
+}
+
+export function updateTodayStats(updates) {
+  const today = new Date().toISOString().split('T')[0];
+  const stats = getDailyStats();
+  const idx = stats.findIndex(s => s.date === today);
+  const current = idx !== -1 ? stats[idx] : {
+    date: today, focusMinutes: 0, tasksCompleted: 0, pomodorosCompleted: 0, streakCount: 0,
+  };
+  const updated = { ...current, ...updates };
+  if (idx !== -1) {
+    stats[idx] = updated;
+  } else {
+    stats.push(updated);
+  }
+  setItem(KEYS.DAILY_STATS, stats);
+  return updated;
+}
+
+export function getStreakCount() {
+  const stats = getDailyStats();
+  if (stats.length === 0) return 0;
+  const sorted = [...stats].sort((a, b) => b.date.localeCompare(a.date));
+  let streak = 0;
+  let current = new Date();
+  current.setHours(0, 0, 0, 0);
+  for (const s of sorted) {
+    const d = new Date(s.date);
+    d.setHours(0, 0, 0, 0);
+    const diff = (current - d) / (1000 * 60 * 60 * 24);
+    if (diff <= 1 && (s.pomodorosCompleted > 0 || s.tasksCompleted > 0)) {
+      streak++;
+      current = d;
+    } else {
+      break;
+    }
+  }
+  return streak;
+}
+
+/* ============ USER SETTINGS ============ */
+const DEFAULT_USER_SETTINGS = {
+  name: 'Your Name',
+  role: 'Personal',
+  avatarInitials: 'YN',
+  avatarColor: '#6C60E0',
+};
+
+export function getUserSettings() {
+  return { ...DEFAULT_USER_SETTINGS, ...getItem(KEYS.USER_SETTINGS, {}) };
+}
+
+export function saveUserSettings(settings) {
+  setItem(KEYS.USER_SETTINGS, settings);
+}
+
+/* ============ SEED DATA ============ */
+function getDefaultEvents() {
+  const today = new Date();
+  const fmt = (d) => d.toISOString();
+  const addDays = (n) => { const d = new Date(today); d.setDate(d.getDate() + n); return d; };
+
+  return [
+    { id: crypto.randomUUID(), title: 'Morning Standup', category: 'Work', color: '#6C60E0', startDate: fmt(today), endDate: null, allDay: false, description: '' },
+    { id: crypto.randomUUID(), title: 'Design Review', category: 'Design', color: '#FF6B35', startDate: fmt(addDays(1)), endDate: null, allDay: false, description: '' },
+    { id: crypto.randomUUID(), title: 'Focus Session', category: 'Personal', color: '#52C41A', startDate: fmt(addDays(2)), endDate: null, allDay: false, description: '' },
+    { id: crypto.randomUUID(), title: 'Team Meeting', category: 'Work', color: '#FF4757', startDate: fmt(addDays(3)), endDate: null, allDay: false, description: '' },
+    { id: crypto.randomUUID(), title: 'Learning React', category: 'Education', color: '#4FD1C5', startDate: fmt(addDays(5)), endDate: null, allDay: true, description: '' },
+  ];
+}
+
+export function seedDefaultTasks() {
+  const existing = getTasks();
+  if (existing.length > 0) return;
+  const defaultTasks = [
+    { title: 'Thiết kế giao diện app', priority: 'high', status: 'in_progress', category: 'Design', categoryColor: '#FF6B35', progress: 60, tags: ['UI', 'Design'], dueDate: new Date().toISOString() },
+    { title: 'Review code pull request', priority: 'medium', status: 'todo', category: 'Development', categoryColor: '#6C60E0', progress: 20, tags: ['Dev', 'PR'] },
+    { title: 'Viết báo cáo tuần', priority: 'low', status: 'todo', category: 'Personal', categoryColor: '#52C41A', progress: 0, tags: ['Writing'] },
+    { title: 'Cập nhật documentation', priority: 'low', status: 'done', category: 'Development', categoryColor: '#6C60E0', progress: 100, tags: ['Docs'] },
+  ];
+  defaultTasks.forEach(t => addTask(t));
+}
