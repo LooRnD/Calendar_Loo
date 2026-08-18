@@ -1,16 +1,47 @@
-# React + Vite
+# 📅 Calendar Loo — Personal Productivity Dashboard
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+> Personal productivity web app with Calendar, Task Manager, Pomodoro Timer, and Analytics.
 
-Currently, two official plugins are available:
+**🌐 Live:** https://loornd.github.io/Calendar_Loo/
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+## ✨ Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+| Module | Description |
+|--------|-------------|
+| 📅 **Calendar** | Monthly view, add/edit/delete events with color coding |
+| ✅ **Task Manager** | Create tasks with priority, tags, deadline, progress tracking |
+| 🍅 **Pomodoro Timer** | Customizable intervals, Focus Mode, session history, task linking |
+| 🎯 **Focus Mode** | Fullscreen distraction-free timer overlay |
+| 📊 **Analytics** | Productivity streak, focus charts, heatmap, completion rate |
+| ⚙️ **Settings** | Personalize profile, Pomodoro config |
 
-## Expanding the Oxlint configuration
+## 🛠️ Tech Stack
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+- **React 18 + Vite** — Fast SPA
+- **React Router v6** — Client-side navigation
+- **Recharts** — Analytics charts
+- **Day.js** — Date manipulation
+- **localStorage** — Data persistence (no backend needed)
+- **GitHub Pages** — Static hosting
+
+## 🚀 Deploy
+
+Automatically deploys to GitHub Pages on every push to `main` via GitHub Actions.
+
+## 🏃 Local Development
+
+```bash
+npm install
+npm run dev
+```
+
+Open http://localhost:5173/Calendar_Loo/
+
+## 🎨 Design
+
+Inspired by **Modern Task & Calendar Dashboard UI** (Figma Freebie)
+- Light mode with dark navy sidebar `#1B1C35`
+- Purple accent `#6C60E0`
+- Inter font family
