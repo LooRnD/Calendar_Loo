@@ -50,10 +50,10 @@ function SettingsModal({ isOpen, onClose }) {
         </div>
         <form onSubmit={handleSave}>
           {[
-            { key: 'workDuration', label: '🍅 Work Duration (minutes)', min: 5, max: 90 },
+            { key: 'workDuration', label: '🍅 Work Duration (minutes)', min: 1, max: 90 },
             { key: 'shortBreak', label: '☕ Short Break (minutes)', min: 1, max: 30 },
-            { key: 'longBreak', label: '🌴 Long Break (minutes)', min: 5, max: 60 },
-            { key: 'cyclesBeforeLong', label: '🔄 Cycles before long break', min: 2, max: 8 },
+            { key: 'longBreak', label: '🌴 Long Break (minutes)', min: 1, max: 60 },
+            { key: 'cyclesBeforeLong', label: '🔄 Cycles before long break', min: 1, max: 8 },
           ].map(({ key, label, min, max }) => (
             <div className="form-group" key={key}>
               <label className="form-label">{label}: <strong>{form[key]}</strong></label>

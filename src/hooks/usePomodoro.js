@@ -67,10 +67,18 @@ export function usePomodoro() {
         g.gain.setValueAtTime(0.4, ctx.currentTime);
         g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.5);
       } else if (type === 'done') {
-        o.frequency.value = 660;
-        o.type = 'triangle';
-        g.gain.setValueAtTime(0.3, ctx.currentTime);
-        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
+        o.frequency.value = 800;
+        o.type = 'square'; // loud and buzzy
+        // Pulse it: 6 beeps
+        g.gain.setValueAtTime(0, ctx.currentTime);
+        for(let i=0; i<6; i++) {
+          let t = ctx.currentTime + (i * 0.5);
+          g.gain.setValueAtTime(0.8, t);
+          g.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+        }
+        o.start(ctx.currentTime);
+        o.stop(ctx.currentTime + 3.5);
+        return; // Don't run the default stop below
       }
       o.start(ctx.currentTime);
       o.stop(ctx.currentTime + 1.5);
