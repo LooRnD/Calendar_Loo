@@ -141,7 +141,7 @@ export default function PomodoroPage() {
 
       {/* Controls */}
       <div className="flex items-center gap-12" style={{ justifyContent: 'center', marginBottom: 24 }}>
-        <button className="btn btn-ghost" onClick={reset} style={{ borderRadius: '50%', width: 44, height: 44, padding: 0 }}>
+        <button className="btn btn-ghost" onClick={reset} style={{ borderRadius: '50%', width: 44, height: 44, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.51"/>
           </svg>
@@ -167,7 +167,7 @@ export default function PomodoroPage() {
             </svg>
           )}
         </button>
-        <button className="btn btn-ghost" onClick={skip} style={{ borderRadius: '50%', width: 44, height: 44, padding: 0 }}>
+        <button className="btn btn-ghost" onClick={skip} style={{ borderRadius: '50%', width: 44, height: 44, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/>
           </svg>
