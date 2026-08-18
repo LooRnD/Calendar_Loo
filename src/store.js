@@ -133,6 +133,7 @@ const DEFAULT_POMODORO_SETTINGS = {
   autoStartWork: false,
   soundEnabled: true,
   soundType: 'bell',
+  musicUrl: 'jfKfPfyJRdk',
 };
 
 export function getPomodoroSettings() {

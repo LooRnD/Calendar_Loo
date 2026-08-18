@@ -63,6 +63,13 @@ function SettingsModal({ isOpen, onClose }) {
             </div>
           ))}
 
+          <div className="form-group">
+            <label className="form-label">🎧 Background Music (Youtube URL or ID)</label>
+            <input className="form-input" value={form.musicUrl || ''} 
+              onChange={e => set('musicUrl', e.target.value)}
+              placeholder="e.g. jfKfPfyJRdk or https://youtu.be/..." />
+          </div>
+
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
             {[
               { key: 'autoStartBreak', label: '⚡ Auto-start break' },
@@ -89,9 +96,16 @@ function SettingsModal({ isOpen, onClose }) {
 }
 
 export default function PomodoroPage() {
-  const { tasks, pomodoroSessions } = useApp();
+  const { tasks, pomodoroSettings, pomodoroSessions } = useApp();
   const [showSettings, setShowSettings] = useState(false);
   const [focusMode, setFocusMode] = useState(false);
+
+  const getYoutubeId = (url) => {
+    if (!url) return 'jfKfPfyJRdk';
+    const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]+)/);
+    return match ? match[1] : url;
+  };
+  const videoId = getYoutubeId(pomodoroSettings?.musicUrl || 'jfKfPfyJRdk');
 
   const {
     phase, cycle, timeLeft, running, progress,
@@ -260,8 +274,8 @@ export default function PomodoroPage() {
             <iframe 
               width="100%" 
               height="80" 
-              src="https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=0&controls=1" 
-              title="Lofi Girl" 
+              src={`https://www.youtube.com/embed/${videoId}?autoplay=0&controls=1`} 
+              title="Background Music" 
               frameBorder="0" 
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
               allowFullScreen
