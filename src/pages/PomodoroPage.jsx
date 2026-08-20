@@ -116,12 +116,16 @@ export default function PomodoroPage() {
 
   const playerRef = useRef(null);
 
+  // Chỉ phát nhạc khi đang trong phase WORK và timer đang chạy
+  // Khi chuyển sang break (short/long) → pause nhạc, dù autoStart có bật hay không
+  const shouldPlayMusic = running && phase === PHASES.WORK;
+
   useEffect(() => {
     if (playerRef.current && playerRef.current.contentWindow) {
-      const func = running ? 'playVideo' : 'pauseVideo';
+      const func = shouldPlayMusic ? 'playVideo' : 'pauseVideo';
       playerRef.current.contentWindow.postMessage(JSON.stringify({ event: 'command', func, args: [] }), '*');
     }
-  }, [running]);
+  }, [shouldPlayMusic]);
 
   const activeTasks = tasks.filter(t => t.status !== 'done');
   const todaySessions = pomodoroSessions.filter(s => {
