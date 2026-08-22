@@ -30,6 +30,15 @@ function eventOccursOnDay(event, day) {
   }
 }
 
+// "Title (14:00 – 16:30)" style label used as a tooltip on calendar day cells
+function eventTimeLabel(event) {
+  if (event.allDay) return `${event.title} (All day)`;
+  const time = event.endDate
+    ? `${dayjs(event.startDate).format('HH:mm')} – ${dayjs(event.endDate).format('HH:mm')}`
+    : dayjs(event.startDate).format('HH:mm');
+  return `${event.title} (${time})`;
+}
+
 // Next occurrence on/after `from` for a (possibly recurring) event
 function nextOccurrence(event, from) {
   const start = dayjs(event.startDate);
@@ -304,7 +313,7 @@ export default function CalendarPage() {
                     className="cal-event-dot"
                     style={{ background: ev.color || '#6C60E0' }}
                     onClick={(e) => handleEventClick(e, ev)}
-                    title={ev.title}
+                    title={eventTimeLabel(ev)}
                   >
                     {ev.title}
                   </div>
@@ -348,7 +357,9 @@ export default function CalendarPage() {
                   onClick={() => { setSelectedEvent(ev); setSelectedDate(null); setShowModal(true); }}
                   style={{ cursor: 'pointer' }}>
                   <div className="event-time">
-                    {ev.allDay ? 'All day' : dayjs(ev.startDate).format('HH:mm')}
+                    {ev.allDay ? 'All day' : ev.endDate
+                      ? `${dayjs(ev.startDate).format('HH:mm')} – ${dayjs(ev.endDate).format('HH:mm')}`
+                      : dayjs(ev.startDate).format('HH:mm')}
                   </div>
                   <div className="event-bar" style={{ background: ev.color || '#6C60E0' }} />
                   <div className="event-info">
