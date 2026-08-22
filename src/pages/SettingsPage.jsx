@@ -62,7 +62,7 @@ export default function SettingsPage() {
   const handleGenerateCode = async () => {
     setSyncBusy(true);
     try { await generateAndLinkSync(); }
-    catch { addToast('Could not connect to cloud sync', 'error'); }
+    catch (err) { console.error('Cloud sync error:', err); addToast(`Sync failed: ${err.message}`, 'error'); }
     setSyncBusy(false);
   };
 
@@ -71,7 +71,7 @@ export default function SettingsPage() {
     if (!joinCode.trim()) return;
     setSyncBusy(true);
     try { await linkSync(joinCode.trim()); setJoinCode(''); }
-    catch { addToast('Could not connect to cloud sync', 'error'); }
+    catch (err) { console.error('Cloud sync error:', err); addToast(`Sync failed: ${err.message}`, 'error'); }
     setSyncBusy(false);
   };
 
