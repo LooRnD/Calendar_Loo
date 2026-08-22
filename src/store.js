@@ -56,6 +56,7 @@ export function addTask(task) {
     tags: [],
     dueDate: null,
     progress: 0,
+    repeat: 'none', // 'none' | 'daily' | 'weekly' | 'monthly' | 'yearly'
     createdAt: new Date().toISOString(),
     ...task,
   };

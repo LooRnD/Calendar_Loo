@@ -5,14 +5,39 @@ import { Modal, PriorityBadge, ProgressBar, ColorPicker } from '../components/sh
 import { getTodayStats, getStreakCount } from '../store.js';
 
 const CATEGORY_COLORS = ['#6C60E0', '#4FD1C5', '#FF6B35', '#52C41A', '#FF4757', '#3B82F6'];
+const REPEAT_OPTIONS = [
+  { value: 'none', label: 'Does not repeat' },
+  { value: 'daily', label: 'Every day' },
+  { value: 'weekly', label: 'Every week' },
+  { value: 'monthly', label: 'Every month' },
+  { value: 'yearly', label: 'Every year' },
+];
+const REPEAT_UNIT = { daily: 'day', weekly: 'week', monthly: 'month', yearly: 'year' };
+
+// Next due date on/after `from` for a (possibly recurring) task
+function nextTaskDueDate(task, from) {
+  if (!task.dueDate) return null;
+  const due = dayjs(task.dueDate);
+  const unit = REPEAT_UNIT[task.repeat];
+  if (!unit || due.isAfter(from, 'day') || due.isSame(from, 'day')) return due;
+  let next = due;
+  while (next.isBefore(from, 'day')) next = next.add(1, unit);
+  return next;
+}
+
+const emptyTask = {
+  title: '', description: '', priority: 'medium', category: 'General',
+  categoryColor: '#6C60E0', tags: [], dueDate: '', progress: 0, status: 'todo', repeat: 'none',
+};
 
 // Task Form Modal
 function TaskModal({ isOpen, onClose, initialTask = null }) {
   const { createTask, editTask } = useApp();
-  const [form, setForm] = useState(() => initialTask || {
-    title: '', description: '', priority: 'medium', category: 'General',
-    categoryColor: '#6C60E0', tags: [], dueDate: '', progress: 0, status: 'todo',
-  });
+  const [form, setForm] = useState(() => initialTask || emptyTask);
+
+  React.useEffect(() => {
+    setForm(initialTask || emptyTask);
+  }, [initialTask]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -90,6 +115,13 @@ function TaskModal({ isOpen, onClose, initialTask = null }) {
             onChange={e => set('dueDate', e.target.value ? new Date(e.target.value).toISOString() : '')} />
         </div>
         <div className="form-group">
+          <label className="form-label">Repeat</label>
+          <select className="form-input form-select" value={form.repeat || 'none'}
+            onChange={e => set('repeat', e.target.value)}>
+            {REPEAT_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+          </select>
+        </div>
+        <div className="form-group">
           <label className="form-label">Progress: {form.progress}%</label>
           <input type="range" min="0" max="100" value={form.progress}
             onChange={e => set('progress', Number(e.target.value))}
@@ -137,11 +169,11 @@ function TaskRow({ task, onEdit, onDelete, onToggle }) {
       </div>
       <div className="task-info">
         <div className="task-title" style={{ textDecoration: task.status === 'done' ? 'line-through' : 'none', opacity: task.status === 'done' ? 0.6 : 1 }}>
-          {task.title}
+          {task.repeat !== 'none' && '🔁 '}{task.title}
         </div>
         <div className="task-meta">
           {task.category} · {task.status === 'done' ? 'Done' : task.status === 'in_progress' ? 'In Progress' : 'To Do'}
-          {task.dueDate && ` · Due: ${dayjs(task.dueDate).format('DD/MM')}`}
+          {task.dueDate && ` · Due: ${nextTaskDueDate(task, dayjs()).format('DD/MM')}`}
         </div>
         {task.progress > 0 && task.status !== 'done' && (
           <div style={{ marginTop: 4 }}>
@@ -293,7 +325,15 @@ export default function TasksPage() {
                 task={task}
                 onEdit={handleEdit}
                 onDelete={removeTask}
-                onToggle={() => editTask(task.id, { status: task.status === 'done' ? 'todo' : 'done' })}
+                onToggle={() => {
+                  if (task.status !== 'done' && task.repeat !== 'none' && task.dueDate) {
+                    editTask(task.id, { status: 'done' });
+                    const current = nextTaskDueDate(task, dayjs());
+                    editTask(task.id, { status: 'todo', dueDate: current.add(1, REPEAT_UNIT[task.repeat]).toISOString(), progress: 0 });
+                  } else {
+                    editTask(task.id, { status: task.status === 'done' ? 'todo' : 'done' });
+                  }
+                }}
               />
             ))}
           </div>
