@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import dayjs from 'dayjs';
 import { useApp } from '../context/AppContext.jsx';
-import { Modal, PriorityBadge, ProgressBar, ColorPicker } from '../components/shared.jsx';
+import { Modal, PriorityBadge, ProgressBar } from '../components/shared.jsx';
 import { getTodayStats, getStreakCount } from '../store.js';
+import { colorForCategory } from '../categoryColor.js';
 
-const CATEGORY_COLORS = ['#6C60E0', '#4FD1C5', '#FF6B35', '#52C41A', '#FF4757', '#3B82F6'];
 const CATEGORY_SUGGESTIONS = ['General', 'Work', 'Personal', 'Design', 'Development', 'Education', 'Health'];
 const REPEAT_OPTIONS = [
   { value: 'none', label: 'Does not repeat' },
@@ -113,17 +113,18 @@ function TaskModal({ isOpen, onClose, initialTask = null }) {
         </div>
         <div className="form-group">
           <label className="form-label">Category</label>
-          <input className="form-input" value={form.category} list="task-category-suggestions"
-            onChange={e => set('category', e.target.value)}
-            placeholder="Category name..." maxLength={50} />
+          <div className="flex items-center gap-8">
+            <span style={{
+              width: 16, height: 16, borderRadius: '50%', flexShrink: 0,
+              background: colorForCategory(form.category),
+            }} title="Color is assigned automatically based on the category" />
+            <input className="form-input" style={{ flex: 1 }} value={form.category} list="task-category-suggestions"
+              onChange={e => setForm(p => ({ ...p, category: e.target.value, categoryColor: colorForCategory(e.target.value) }))}
+              placeholder="Category name..." maxLength={50} />
+          </div>
           <datalist id="task-category-suggestions">
             {CATEGORY_SUGGESTIONS.map(c => <option key={c} value={c} />)}
           </datalist>
-        </div>
-        <div className="form-group">
-          <label className="form-label">Category Color</label>
-          <ColorPicker value={form.categoryColor}
-            onChange={c => set('categoryColor', c)} />
         </div>
         <div className="form-group">
           <label className="form-label">Deadline</label>

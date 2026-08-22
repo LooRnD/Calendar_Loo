@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import dayjs from 'dayjs';
 import 'dayjs/locale/en';
 import { useApp } from '../context/AppContext.jsx';
-import { Modal, ColorPicker } from '../components/shared.jsx';
+import { Modal } from '../components/shared.jsx';
+import { colorForCategory } from '../categoryColor.js';
 
 dayjs.locale('en');
 
@@ -111,16 +112,18 @@ function EventModal({ isOpen, onClose, event = null, defaultDate = null }) {
         </div>
         <div className="form-group">
           <label className="form-label">Category</label>
-          <input className="form-input" value={form.category} list="event-category-suggestions"
-            onChange={e => set('category', e.target.value)}
-            placeholder="Category..." maxLength={50} />
+          <div className="flex items-center gap-8">
+            <span style={{
+              width: 16, height: 16, borderRadius: '50%', flexShrink: 0,
+              background: colorForCategory(form.category),
+            }} title="Color is assigned automatically based on the category" />
+            <input className="form-input" style={{ flex: 1 }} value={form.category} list="event-category-suggestions"
+              onChange={e => setForm(p => ({ ...p, category: e.target.value, color: colorForCategory(e.target.value) }))}
+              placeholder="Category..." maxLength={50} />
+          </div>
           <datalist id="event-category-suggestions">
             {CATEGORY_SUGGESTIONS.map(c => <option key={c} value={c} />)}
           </datalist>
-        </div>
-        <div className="form-group">
-          <label className="form-label">Color</label>
-          <ColorPicker value={form.color} onChange={c => set('color', c)} />
         </div>
         {isRepeating ? (
           <div className="form-group">
