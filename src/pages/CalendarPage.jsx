@@ -8,6 +8,7 @@ dayjs.locale('en');
 
 const COLORS = { '#6C60E0': 'purple', '#4FD1C5': 'teal', '#FF6B35': 'orange', '#52C41A': 'green', '#FF4757': 'red', '#3B82F6': 'blue' };
 const DOW = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+const CATEGORY_SUGGESTIONS = ['General', 'Work', 'Personal', 'Design', 'Development', 'Education', 'Health'];
 const REPEAT_OPTIONS = [
   { value: 'none', label: 'Does not repeat' },
   { value: 'daily', label: 'Every day' },
@@ -92,9 +93,12 @@ function EventModal({ isOpen, onClose, event = null, defaultDate = null }) {
         </div>
         <div className="form-group">
           <label className="form-label">Category</label>
-          <input className="form-input" value={form.category}
+          <input className="form-input" value={form.category} list="event-category-suggestions"
             onChange={e => set('category', e.target.value)}
             placeholder="Category..." maxLength={50} />
+          <datalist id="event-category-suggestions">
+            {CATEGORY_SUGGESTIONS.map(c => <option key={c} value={c} />)}
+          </datalist>
         </div>
         <div className="form-group">
           <label className="form-label">Color</label>

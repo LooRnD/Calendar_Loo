@@ -5,6 +5,7 @@ import { Modal, PriorityBadge, ProgressBar, ColorPicker } from '../components/sh
 import { getTodayStats, getStreakCount } from '../store.js';
 
 const CATEGORY_COLORS = ['#6C60E0', '#4FD1C5', '#FF6B35', '#52C41A', '#FF4757', '#3B82F6'];
+const CATEGORY_SUGGESTIONS = ['General', 'Work', 'Personal', 'Design', 'Development', 'Education', 'Health'];
 const REPEAT_OPTIONS = [
   { value: 'none', label: 'Does not repeat' },
   { value: 'daily', label: 'Every day' },
@@ -99,9 +100,12 @@ function TaskModal({ isOpen, onClose, initialTask = null }) {
         </div>
         <div className="form-group">
           <label className="form-label">Category</label>
-          <input className="form-input" value={form.category}
+          <input className="form-input" value={form.category} list="task-category-suggestions"
             onChange={e => set('category', e.target.value)}
             placeholder="Category name..." maxLength={50} />
+          <datalist id="task-category-suggestions">
+            {CATEGORY_SUGGESTIONS.map(c => <option key={c} value={c} />)}
+          </datalist>
         </div>
         <div className="form-group">
           <label className="form-label">Category Color</label>
