@@ -53,6 +53,19 @@ function TaskModal({ isOpen, onClose, initialTask = null }) {
 
   const set = (key, val) => setForm(p => ({ ...p, [key]: val }));
 
+  // datetime-local's native widget desyncs when tightly controlled by React, so date
+  // and time are edited as two plain inputs and combined/split via dayjs (local time).
+  const dateOf = (iso) => (iso ? dayjs(iso).format('YYYY-MM-DD') : '');
+  const timeOf = (iso) => (iso ? dayjs(iso).format('HH:mm') : '');
+  const setDueDatePart = (dateVal) => {
+    if (!dateVal) { set('dueDate', ''); return; }
+    set('dueDate', new Date(`${dateVal}T${timeOf(form.dueDate) || '00:00'}`).toISOString());
+  };
+  const setDueTimePart = (timeVal) => {
+    const date = dateOf(form.dueDate) || dayjs().format('YYYY-MM-DD');
+    set('dueDate', new Date(`${date}T${timeVal}`).toISOString());
+  };
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={initialTask ? 'Edit Task' : 'Create New Task'}>
       <form onSubmit={handleSubmit}>
@@ -114,9 +127,14 @@ function TaskModal({ isOpen, onClose, initialTask = null }) {
         </div>
         <div className="form-group">
           <label className="form-label">Deadline</label>
-          <input type="datetime-local" className="form-input"
-            value={form.dueDate ? form.dueDate.slice(0, 16) : ''}
-            onChange={e => set('dueDate', e.target.value ? new Date(e.target.value).toISOString() : '')} />
+          <div className="flex gap-8">
+            <input type="date" className="form-input" style={{ flex: 1 }}
+              value={dateOf(form.dueDate)}
+              onChange={e => setDueDatePart(e.target.value)} />
+            <input type="time" className="form-input" style={{ width: 110 }}
+              value={timeOf(form.dueDate)}
+              onChange={e => setDueTimePart(e.target.value)} />
+          </div>
         </div>
         <div className="form-group">
           <label className="form-label">Repeat</label>

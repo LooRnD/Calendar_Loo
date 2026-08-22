@@ -62,10 +62,19 @@ function EventModal({ isOpen, onClose, event = null, defaultDate = null }) {
 
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
 
-  const setStartTime = (time) => {
-    if (!form.startDate || !time) return;
-    set('startDate', `${form.startDate.slice(0, 11)}${time}:00.000Z`);
+  // datetime-local's native widget desyncs when tightly controlled by React, so date
+  // and time are edited as two plain inputs and combined/split via dayjs (local time).
+  const dateOf = (iso) => (iso ? dayjs(iso).format('YYYY-MM-DD') : '');
+  const timeOf = (iso) => (iso ? dayjs(iso).format('HH:mm') : '');
+  const setDatePart = (field, dateVal) => {
+    if (!dateVal) { set(field, ''); return; }
+    set(field, new Date(`${dateVal}T${timeOf(form[field]) || '00:00'}`).toISOString());
   };
+  const setTimePart = (field, timeVal) => {
+    const date = dateOf(form[field]) || dayjs().format('YYYY-MM-DD');
+    set(field, new Date(`${date}T${timeVal}`).toISOString());
+  };
+  const setStartTime = (time) => setTimePart('startDate', time);
 
   // Only lock the date for an *existing* recurring event — a brand new event still needs a start date picker
   const isRepeating = Boolean(event) && form.repeat && form.repeat !== 'none';
@@ -112,7 +121,7 @@ function EventModal({ isOpen, onClose, event = null, defaultDate = null }) {
               Editing here changes the whole series, not just the day you opened.
             </div>
             <input type="time" className="form-input" style={{ maxWidth: 160 }}
-              value={form.startDate ? form.startDate.slice(11, 16) : ''}
+              value={timeOf(form.startDate)}
               onChange={e => setStartTime(e.target.value)} />
             {form.allDay && (
               <div className="fs-13 text-secondary" style={{ marginTop: 4 }}>
@@ -124,15 +133,25 @@ function EventModal({ isOpen, onClose, event = null, defaultDate = null }) {
           <div className="flex gap-12 mb-16">
             <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
               <label className="form-label">Start Date</label>
-              <input type="datetime-local" className="form-input"
-                value={form.startDate ? form.startDate.slice(0, 16) : ''}
-                onChange={e => set('startDate', e.target.value ? new Date(e.target.value).toISOString() : '')} />
+              <div className="flex gap-8">
+                <input type="date" className="form-input" style={{ flex: 1 }}
+                  value={dateOf(form.startDate)}
+                  onChange={e => setDatePart('startDate', e.target.value)} />
+                <input type="time" className="form-input" style={{ width: 110 }}
+                  value={timeOf(form.startDate)}
+                  onChange={e => setTimePart('startDate', e.target.value)} />
+              </div>
             </div>
             <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
               <label className="form-label">End Date</label>
-              <input type="datetime-local" className="form-input"
-                value={form.endDate ? form.endDate.slice(0, 16) : ''}
-                onChange={e => set('endDate', e.target.value ? new Date(e.target.value).toISOString() : '')} />
+              <div className="flex gap-8">
+                <input type="date" className="form-input" style={{ flex: 1 }}
+                  value={dateOf(form.endDate)}
+                  onChange={e => setDatePart('endDate', e.target.value)} />
+                <input type="time" className="form-input" style={{ width: 110 }}
+                  value={timeOf(form.endDate)}
+                  onChange={e => setTimePart('endDate', e.target.value)} />
+              </div>
             </div>
           </div>
         )}
