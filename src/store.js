@@ -100,6 +100,7 @@ export function addEvent(event) {
     color: '#6C60E0',
     category: 'General',
     allDay: false,
+    repeat: 'none', // 'none' | 'daily' | 'weekly' | 'monthly' | 'yearly'
     ...event,
   };
   events.push(newEvent);
@@ -258,6 +259,29 @@ function getDefaultEvents() {
     { id: generateId(), title: 'Team Meeting', category: 'Work', color: '#FF4757', startDate: fmt(addDays(3)), endDate: null, allDay: false, description: '' },
     { id: generateId(), title: 'Learning React', category: 'Education', color: '#4FD1C5', startDate: fmt(addDays(5)), endDate: null, allDay: true, description: '' },
   ];
+}
+
+/* ============ BACKUP / RESTORE ============ */
+export function exportAllData() {
+  return {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    tasks: getTasks(),
+    events: getEvents(),
+    pomodoroSettings: getPomodoroSettings(),
+    pomodoroSessions: getPomodoroSessions(),
+    dailyStats: getDailyStats(),
+    userSettings: getUserSettings(),
+  };
+}
+
+export function importAllData(data) {
+  if (Array.isArray(data.tasks)) saveTasks(data.tasks);
+  if (Array.isArray(data.events)) saveEvents(data.events);
+  if (data.pomodoroSettings) savePomodoroSettings(data.pomodoroSettings);
+  if (Array.isArray(data.pomodoroSessions)) setItem(KEYS.POMODORO_SESSIONS, data.pomodoroSessions);
+  if (Array.isArray(data.dailyStats)) setItem(KEYS.DAILY_STATS, data.dailyStats);
+  if (data.userSettings) saveUserSettings(data.userSettings);
 }
 
 export function seedDefaultTasks() {

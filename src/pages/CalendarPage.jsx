@@ -8,6 +8,38 @@ dayjs.locale('en');
 
 const COLORS = { '#6C60E0': 'purple', '#4FD1C5': 'teal', '#FF6B35': 'orange', '#52C41A': 'green', '#FF4757': 'red', '#3B82F6': 'blue' };
 const DOW = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+const REPEAT_OPTIONS = [
+  { value: 'none', label: 'Does not repeat' },
+  { value: 'daily', label: 'Every day' },
+  { value: 'weekly', label: 'Every week' },
+  { value: 'monthly', label: 'Every month' },
+  { value: 'yearly', label: 'Every year' },
+];
+
+// Whether a recurring event lands on the given day
+function eventOccursOnDay(event, day) {
+  const start = dayjs(event.startDate);
+  if (day.isBefore(start, 'day')) return false;
+  switch (event.repeat) {
+    case 'daily': return true;
+    case 'weekly': return day.day() === start.day();
+    case 'monthly': return day.date() === start.date();
+    case 'yearly': return day.date() === start.date() && day.month() === start.month();
+    default: return day.isSame(start, 'day');
+  }
+}
+
+// Next occurrence on/after `from` for a (possibly recurring) event
+function nextOccurrence(event, from) {
+  const start = dayjs(event.startDate);
+  if (!event.repeat || event.repeat === 'none') return start;
+  if (start.isAfter(from, 'day')) return start;
+  const unit = { daily: 'day', weekly: 'week', monthly: 'month', yearly: 'year' }[event.repeat];
+  if (!unit) return start;
+  let occ = start;
+  while (occ.isBefore(from, 'day')) occ = occ.add(1, unit);
+  return occ;
+}
 
 function EventModal({ isOpen, onClose, event = null, defaultDate = null }) {
   const { createEvent, editEvent, removeEvent } = useApp();
@@ -16,6 +48,7 @@ function EventModal({ isOpen, onClose, event = null, defaultDate = null }) {
     color: '#6C60E0', allDay: false,
     startDate: defaultDate ? defaultDate.toISOString() : new Date().toISOString(),
     endDate: null,
+    repeat: 'none',
   });
 
   React.useEffect(() => {
@@ -80,6 +113,13 @@ function EventModal({ isOpen, onClose, event = null, defaultDate = null }) {
           <label htmlFor="all-day" className="form-label" style={{ marginBottom: 0 }}>All day</label>
         </div>
         <div className="form-group">
+          <label className="form-label">Repeat</label>
+          <select className="form-input form-select" value={form.repeat || 'none'}
+            onChange={e => set('repeat', e.target.value)}>
+            {REPEAT_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+          </select>
+        </div>
+        <div className="form-group">
           <label className="form-label">Note</label>
           <textarea className="form-input form-textarea" value={form.description}
             onChange={e => set('description', e.target.value)}
@@ -126,7 +166,7 @@ export default function CalendarPage() {
   }
 
   const getEventsForDay = (day) =>
-    events.filter(e => dayjs(e.startDate).isSame(day, 'day'));
+    events.filter(e => eventOccursOnDay(e, day));
 
   const handleDayClick = (day) => {
     setSelectedDate(day.toDate());
@@ -141,17 +181,18 @@ export default function CalendarPage() {
     setShowModal(true);
   };
 
-  // Group upcoming events
+  // Group upcoming events (using each event's next occurrence for recurring ones)
   const today = dayjs();
   const upcoming = events
-    .filter(e => dayjs(e.startDate).isAfter(today.subtract(1, 'day')))
-    .sort((a, b) => new Date(a.startDate) - new Date(b.startDate))
+    .map(e => ({ ...e, occurrence: nextOccurrence(e, today) }))
+    .filter(e => e.occurrence.isAfter(today.subtract(1, 'day'), 'day') || e.occurrence.isSame(today, 'day'))
+    .sort((a, b) => a.occurrence.valueOf() - b.occurrence.valueOf())
     .slice(0, 8);
 
   const groupByDate = (evts) => {
     const groups = {};
     evts.forEach(ev => {
-      const key = dayjs(ev.startDate).format('DD MMMM');
+      const key = ev.occurrence.format('DD MMMM');
       if (!groups[key]) groups[key] = [];
       groups[key].push(ev);
     });
@@ -263,7 +304,7 @@ export default function CalendarPage() {
                   <div className="event-bar" style={{ background: ev.color || '#6C60E0' }} />
                   <div className="event-info">
                     <div className="event-category">{ev.category}</div>
-                    <div className="event-title">{ev.title}</div>
+                    <div className="event-title">{ev.repeat !== 'none' && '🔁 '}{ev.title}</div>
                   </div>
                 </div>
               ))}
