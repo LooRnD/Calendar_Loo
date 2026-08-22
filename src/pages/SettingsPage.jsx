@@ -1,11 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '../context/AppContext.jsx';
 import { ColorPicker } from '../components/shared.jsx';
+import { exportAllData, importAllData } from '../store.js';
 
 export default function SettingsPage() {
-  const { userSettings, saveUser, pomodoroSettings, saveSettings } = useApp();
+  const {
+    userSettings, saveUser, pomodoroSettings, saveSettings, addToast,
+    syncCode, isSyncAvailable, linkSync, generateAndLinkSync, unlinkSync,
+  } = useApp();
   const [userForm, setUserForm] = useState(userSettings);
   const [pomForm, setPomForm] = useState(pomodoroSettings);
+  const [joinCode, setJoinCode] = useState('');
+  const [syncBusy, setSyncBusy] = useState(false);
+  const fileInputRef = useRef(null);
 
   useEffect(() => { setUserForm(userSettings); }, [userSettings]);
   useEffect(() => { setPomForm(pomodoroSettings); }, [pomodoroSettings]);
@@ -21,6 +28,56 @@ export default function SettingsPage() {
       localStorage.clear();
       window.location.reload();
     }
+  };
+
+  const handleExport = () => {
+    const data = exportAllData();
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `calendar-loo-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImportFile = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const data = JSON.parse(reader.result);
+        importAllData(data);
+        addToast('Data imported! Reloading...', 'success');
+        setTimeout(() => window.location.reload(), 800);
+      } catch {
+        addToast('Invalid backup file', 'error');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
+  const handleGenerateCode = async () => {
+    setSyncBusy(true);
+    try { await generateAndLinkSync(); }
+    catch { addToast('Could not connect to cloud sync', 'error'); }
+    setSyncBusy(false);
+  };
+
+  const handleJoinCode = async (e) => {
+    e.preventDefault();
+    if (!joinCode.trim()) return;
+    setSyncBusy(true);
+    try { await linkSync(joinCode.trim()); setJoinCode(''); }
+    catch { addToast('Could not connect to cloud sync', 'error'); }
+    setSyncBusy(false);
+  };
+
+  const handleCopyCode = () => {
+    navigator.clipboard?.writeText(syncCode);
+    addToast('Sync code copied', 'success');
   };
 
   return (
@@ -107,6 +164,70 @@ export default function SettingsPage() {
           <p>🎨 UI inspired by Modern Task Calendar Dashboard (Figma Freebie)</p>
           <p>🔒 All data is stored locally in your browser</p>
           <p>🌐 Hosted on GitHub Pages</p>
+        </div>
+      </div>
+
+      {/* Cloud Sync */}
+      <div className="card mb-16">
+        <div className="fs-16 fw-700 mb-4">☁️ Cloud Sync</div>
+        {!isSyncAvailable ? (
+          <div className="fs-13 text-secondary">
+            Cloud sync is not configured for this deployment (missing Firebase config).
+          </div>
+        ) : syncCode ? (
+          <div>
+            <div className="fs-13 text-secondary mb-12">
+              This device is linked. Enter the same code on another device (any browser, any Google account) to sync automatically — no login required.
+            </div>
+            <div className="flex items-center gap-8 mb-12">
+              <code className="tag" style={{ fontSize: 14, padding: '6px 12px' }}>{syncCode}</code>
+              <button className="btn btn-ghost" onClick={handleCopyCode}>📋 Copy</button>
+            </div>
+            <button
+              className="btn"
+              style={{ background: 'rgba(255,71,87,0.1)', color: '#FF4757', border: '1px solid rgba(255,71,87,0.3)' }}
+              onClick={unlinkSync}
+            >
+              Unlink this device
+            </button>
+          </div>
+        ) : (
+          <div>
+            <div className="fs-13 text-secondary mb-12">
+              Link this device to auto-sync tasks, events and settings across browsers/devices/accounts — no login needed, just a shared code.
+            </div>
+            <button className="btn btn-primary mb-12" onClick={handleGenerateCode} disabled={syncBusy}>
+              🔑 Generate new sync code
+            </button>
+            <form onSubmit={handleJoinCode} className="flex gap-8">
+              <input className="form-input" style={{ flex: 1 }} placeholder="Enter code from another device..."
+                value={joinCode} onChange={e => setJoinCode(e.target.value)} disabled={syncBusy} />
+              <button type="submit" className="btn btn-ghost" disabled={syncBusy}>Link</button>
+            </form>
+          </div>
+        )}
+      </div>
+
+      {/* Backup & Restore */}
+      <div className="card mb-16">
+        <div className="fs-16 fw-700 mb-4">💾 Backup & Restore</div>
+        <div className="fs-13 text-secondary mb-12">
+          Data is stored only in this browser. Export a backup before switching browser, device or account, then import it back to restore.
+        </div>
+        <div className="flex gap-8">
+          <button className="btn btn-primary" onClick={handleExport} id="export-data-btn">
+            ⬇️ Export data
+          </button>
+          <button className="btn btn-ghost" onClick={() => fileInputRef.current?.click()} id="import-data-btn">
+            ⬆️ Import data
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="application/json"
+            style={{ display: 'none' }}
+            onChange={handleImportFile}
+          />
         </div>
       </div>
 
