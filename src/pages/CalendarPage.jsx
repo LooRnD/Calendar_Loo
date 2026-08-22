@@ -4,10 +4,10 @@ import 'dayjs/locale/en';
 import { useApp } from '../context/AppContext.jsx';
 import { Modal } from '../components/shared.jsx';
 import { colorForCategory } from '../categoryColor.js';
+import { occursOnDay, nextOccurrence as nextOccurrenceOf, advanceOccurrence } from '../recurrence.js';
 
 dayjs.locale('en');
 
-const COLORS = { '#6C60E0': 'purple', '#4FD1C5': 'teal', '#FF6B35': 'orange', '#52C41A': 'green', '#FF4757': 'red', '#3B82F6': 'blue' };
 const DOW = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
 const CATEGORY_SUGGESTIONS = ['General', 'Work', 'Personal', 'Design', 'Development', 'Education', 'Health'];
 const REPEAT_OPTIONS = [
@@ -18,18 +18,9 @@ const REPEAT_OPTIONS = [
   { value: 'yearly', label: 'Every year' },
 ];
 
-// Whether a recurring event lands on the given day
-function eventOccursOnDay(event, day) {
-  const start = dayjs(event.startDate);
-  if (day.isBefore(start, 'day')) return false;
-  switch (event.repeat) {
-    case 'daily': return true;
-    case 'weekly': return day.day() === start.day();
-    case 'monthly': return day.date() === start.date();
-    case 'yearly': return day.date() === start.date() && day.month() === start.month();
-    default: return day.isSame(start, 'day');
-  }
-}
+// Whether a recurring event/task lands on the given day
+const eventOccursOnDay = (event, day) => occursOnDay(event.startDate, event.repeat, day);
+const taskOccursOnDay = (task, day) => occursOnDay(task.dueDate, task.repeat, day);
 
 // "Title (14:00 – 16:30)" style label used as a tooltip on calendar day cells
 function eventTimeLabel(event) {
@@ -40,17 +31,9 @@ function eventTimeLabel(event) {
   return `${event.title} (${time})`;
 }
 
-// Next occurrence on/after `from` for a (possibly recurring) event
-function nextOccurrence(event, from) {
-  const start = dayjs(event.startDate);
-  if (!event.repeat || event.repeat === 'none') return start;
-  if (start.isAfter(from, 'day')) return start;
-  const unit = { daily: 'day', weekly: 'week', monthly: 'month', yearly: 'year' }[event.repeat];
-  if (!unit) return start;
-  let occ = start;
-  while (occ.isBefore(from, 'day')) occ = occ.add(1, unit);
-  return occ;
-}
+// Next occurrence on/after `from` for a (possibly recurring) event/task
+const nextOccurrence = (event, from) => nextOccurrenceOf(event.startDate, event.repeat, from);
+const taskNextOccurrence = (task, from) => nextOccurrenceOf(task.dueDate, task.repeat, from);
 
 function EventModal({ isOpen, onClose, event = null, defaultDate = null }) {
   const { createEvent, editEvent, removeEvent } = useApp();
@@ -206,12 +189,11 @@ function EventModal({ isOpen, onClose, event = null, defaultDate = null }) {
 }
 
 export default function CalendarPage() {
-  const { events } = useApp();
+  const { events, tasks, editTask } = useApp();
   const [currentDate, setCurrentDate] = useState(dayjs());
   const [showModal, setShowModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
-  const [view, setView] = useState('month'); // 'month' | 'week'
 
   const startOfMonth = currentDate.startOf('month');
   const endOfMonth = currentDate.endOf('month');
@@ -226,8 +208,13 @@ export default function CalendarPage() {
     d = d.add(1, 'day');
   }
 
-  const getEventsForDay = (day) =>
-    events.filter(e => eventOccursOnDay(e, day));
+  const tasksWithDueDate = tasks.filter(t => t.dueDate);
+
+  // Day cell items: calendar events plus tasks that have a deadline on that day
+  const getDayItems = (day) => [
+    ...events.filter(e => eventOccursOnDay(e, day)).map(e => ({ kind: 'event', id: `e-${e.id}`, ref: e })),
+    ...tasksWithDueDate.filter(t => taskOccursOnDay(t, day)).map(t => ({ kind: 'task', id: `t-${t.id}`, ref: t })),
+  ];
 
   const handleDayClick = (day) => {
     setSelectedDate(day.toDate());
@@ -242,11 +229,26 @@ export default function CalendarPage() {
     setShowModal(true);
   };
 
-  // Group upcoming events (using each event's next occurrence for recurring ones)
+  // Toggle a task's done state from the calendar; a repeating task reschedules
+  // to its next occurrence instead of staying done forever (same as Task Manager)
+  const handleTaskToggle = (e, task) => {
+    e.stopPropagation();
+    if (task.status !== 'done' && task.repeat !== 'none' && task.dueDate) {
+      editTask(task.id, { status: 'done' });
+      const next = advanceOccurrence(task.dueDate, task.repeat, dayjs());
+      editTask(task.id, { status: 'todo', dueDate: next.toISOString(), progress: 0 });
+    } else {
+      editTask(task.id, { status: task.status === 'done' ? 'todo' : 'done' });
+    }
+  };
+
+  // Group upcoming events + tasks (using each item's next occurrence for recurring ones)
   const today = dayjs();
-  const upcoming = events
-    .map(e => ({ ...e, occurrence: nextOccurrence(e, today) }))
-    .filter(e => e.occurrence.isAfter(today.subtract(1, 'day'), 'day') || e.occurrence.isSame(today, 'day'))
+  const upcoming = [
+    ...events.map(e => ({ kind: 'event', ref: e, occurrence: nextOccurrence(e, today) })),
+    ...tasksWithDueDate.map(t => ({ kind: 'task', ref: t, occurrence: taskNextOccurrence(t, today) })),
+  ]
+    .filter(x => x.occurrence.isAfter(today.subtract(1, 'day'), 'day') || x.occurrence.isSame(today, 'day'))
     .sort((a, b) => a.occurrence.valueOf() - b.occurrence.valueOf())
     .slice(0, 8);
 
@@ -301,7 +303,7 @@ export default function CalendarPage() {
           {days.map((day, i) => {
             const isToday = day.isSame(today, 'day');
             const isOther = !day.isSame(currentDate, 'month');
-            const dayEvents = getEventsForDay(day);
+            const dayItems = getDayItems(day);
 
             return (
               <div
@@ -310,19 +312,27 @@ export default function CalendarPage() {
                 onClick={() => handleDayClick(day)}
               >
                 <div className="cal-day-num">{day.date()}</div>
-                {dayEvents.slice(0, 3).map(ev => (
-                  <div
-                    key={ev.id}
-                    className="cal-event-dot"
-                    style={{ background: ev.color || '#6C60E0' }}
-                    onClick={(e) => handleEventClick(e, ev)}
-                    title={eventTimeLabel(ev)}
-                  >
-                    {ev.title}
-                  </div>
-                ))}
-                {dayEvents.length > 3 && (
-                  <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>+{dayEvents.length - 3}</div>
+                {dayItems.slice(0, 3).map(item => {
+                  const isTask = item.kind === 'task';
+                  const isDone = isTask && item.ref.status === 'done';
+                  return (
+                    <div
+                      key={item.id}
+                      className="cal-event-dot"
+                      style={{
+                        background: isTask ? (item.ref.categoryColor || '#6C60E0') : (item.ref.color || '#6C60E0'),
+                        opacity: isDone ? 0.5 : 1,
+                        textDecoration: isDone ? 'line-through' : 'none',
+                      }}
+                      onClick={(e) => isTask ? handleTaskToggle(e, item.ref) : handleEventClick(e, item.ref)}
+                      title={isTask ? `✓ ${item.ref.title} (Task — click to toggle done)` : eventTimeLabel(item.ref)}
+                    >
+                      {isTask && '✓ '}{item.ref.title}
+                    </div>
+                  );
+                })}
+                {dayItems.length > 3 && (
+                  <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>+{dayItems.length - 3}</div>
                 )}
               </div>
             );
@@ -344,7 +354,7 @@ export default function CalendarPage() {
         {Object.keys(grouped).length === 0 ? (
           <div style={{ textAlign: 'center', padding: '30px 0', color: 'var(--text-muted)' }}>
             <div style={{ fontSize: 36, marginBottom: 8 }}>📅</div>
-            <div className="fs-13">No upcoming events</div>
+            <div className="fs-13">No upcoming events or tasks</div>
           </div>
         ) : (
           Object.entries(grouped).map(([dateStr, evts]) => (
@@ -355,22 +365,43 @@ export default function CalendarPage() {
                   <circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/>
                 </svg>
               </div>
-              {evts.map(ev => (
-                <div key={ev.id} className="calendar-event-item"
-                  onClick={() => { setSelectedEvent(ev); setSelectedDate(null); setShowModal(true); }}
-                  style={{ cursor: 'pointer' }}>
-                  <div className="event-time">
-                    {ev.allDay ? 'All day' : ev.endDate
-                      ? `${dayjs(ev.startDate).format('HH:mm')} – ${dayjs(ev.endDate).format('HH:mm')}`
-                      : dayjs(ev.startDate).format('HH:mm')}
+              {evts.map(item => {
+                if (item.kind === 'task') {
+                  const t = item.ref;
+                  const isDone = t.status === 'done';
+                  return (
+                    <div key={`t-${t.id}`} className="calendar-event-item"
+                      onClick={(e) => handleTaskToggle(e, t)}
+                      style={{ cursor: 'pointer' }}>
+                      <div className="event-time">{dayjs(t.dueDate).format('HH:mm')}</div>
+                      <div className="event-bar" style={{ background: t.categoryColor || '#6C60E0' }} />
+                      <div className="event-info">
+                        <div className="event-category">Task · {t.category}</div>
+                        <div className="event-title" style={{ textDecoration: isDone ? 'line-through' : 'none', opacity: isDone ? 0.6 : 1 }}>
+                          {t.repeat !== 'none' && '🔁 '}✓ {t.title}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
+                const ev = item.ref;
+                return (
+                  <div key={`e-${ev.id}`} className="calendar-event-item"
+                    onClick={() => { setSelectedEvent(ev); setSelectedDate(null); setShowModal(true); }}
+                    style={{ cursor: 'pointer' }}>
+                    <div className="event-time">
+                      {ev.allDay ? 'All day' : ev.endDate
+                        ? `${dayjs(ev.startDate).format('HH:mm')} – ${dayjs(ev.endDate).format('HH:mm')}`
+                        : dayjs(ev.startDate).format('HH:mm')}
+                    </div>
+                    <div className="event-bar" style={{ background: ev.color || '#6C60E0' }} />
+                    <div className="event-info">
+                      <div className="event-category">{ev.category}</div>
+                      <div className="event-title">{ev.repeat !== 'none' && '🔁 '}{ev.title}</div>
+                    </div>
                   </div>
-                  <div className="event-bar" style={{ background: ev.color || '#6C60E0' }} />
-                  <div className="event-info">
-                    <div className="event-category">{ev.category}</div>
-                    <div className="event-title">{ev.repeat !== 'none' && '🔁 '}{ev.title}</div>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ))
         )}

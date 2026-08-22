@@ -5,6 +5,7 @@ import { ProgressBar, PriorityBadge } from '../components/shared.jsx';
 import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
 import { getTodayStats, getStreakCount } from '../store.js';
+import { nextOccurrence, advanceOccurrence } from '../recurrence.js';
 
 function MiniPomodoro({ onNavigate }) {
   const { timeLeft, running, phase, start, pause, phaseLabel, phaseColor, formatTime, progress, PHASES } = usePomodoro();
@@ -53,13 +54,11 @@ export default function DashboardPage() {
   const todayStats = getTodayStats();
   const streak = getStreakCount();
 
-  const todayEvents = events
-    .filter(e => dayjs(e.startDate).isSame(today, 'day'))
-    .sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
-
+  // Each event's next occurrence, so recurring events keep showing up after their first day
   const upcomingEvents = events
-    .filter(e => dayjs(e.startDate).isAfter(today.startOf('day')))
-    .sort((a, b) => new Date(a.startDate) - new Date(b.startDate))
+    .map(e => ({ ...e, occurrence: nextOccurrence(e.startDate, e.repeat, today) }))
+    .filter(e => e.occurrence.isAfter(today.subtract(1, 'day'), 'day') || e.occurrence.isSame(today, 'day'))
+    .sort((a, b) => a.occurrence.valueOf() - b.occurrence.valueOf())
     .slice(0, 5);
 
   const pendingTasks = tasks
@@ -142,10 +141,16 @@ export default function DashboardPage() {
             const icon = icons[task.category] || '📌';
             return (
               <div key={task.id} className="task-item" onClick={() => navigate('/tasks')}>
-                <button 
-                  onClick={(e) => { 
-                    e.stopPropagation(); 
-                    editTask(task.id, { status: task.status === 'done' ? 'todo' : 'done' });
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (task.status !== 'done' && task.repeat !== 'none' && task.dueDate) {
+                      editTask(task.id, { status: 'done' });
+                      const next = advanceOccurrence(task.dueDate, task.repeat, today);
+                      editTask(task.id, { status: 'todo', dueDate: next.toISOString(), progress: 0 });
+                    } else {
+                      editTask(task.id, { status: task.status === 'done' ? 'todo' : 'done' });
+                    }
                   }}
                   title={task.status === 'done' ? 'Mark as Todo' : 'Mark as Done'}
                   style={{
@@ -163,10 +168,10 @@ export default function DashboardPage() {
                   <span style={{ fontSize: 16 }}>{icon}</span>
                 </div>
                 <div className="task-info">
-                  <div className="task-title">{task.title}</div>
+                  <div className="task-title">{task.repeat !== 'none' && '🔁 '}{task.title}</div>
                   <div className="task-meta">
                     {task.category} · {task.status === 'in_progress' ? 'In Progress' : 'To Do'}
-                    {task.dueDate && ` · ${dayjs(task.dueDate).format('DD/MM')}`}
+                    {task.dueDate && ` · ${nextOccurrence(task.dueDate, task.repeat, today).format('DD/MM')}`}
                   </div>
                 </div>
                 <PriorityBadge priority={task.priority} />
@@ -221,7 +226,7 @@ export default function DashboardPage() {
             // Group by date
             const groups = {};
             upcomingEvents.forEach(ev => {
-              const key = dayjs(ev.startDate).format('DD MMMM');
+              const key = ev.occurrence.format('DD MMMM');
               if (!groups[key]) groups[key] = [];
               groups[key].push(ev);
             });
@@ -242,7 +247,7 @@ export default function DashboardPage() {
                     <div className="event-bar" style={{ background: ev.color || '#6C60E0' }} />
                     <div className="event-info">
                       <div className="event-category">{ev.category}</div>
-                      <div className="event-title">{ev.title}</div>
+                      <div className="event-title">{ev.repeat !== 'none' && '🔁 '}{ev.title}</div>
                     </div>
                   </div>
                 ))}

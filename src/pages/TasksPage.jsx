@@ -4,6 +4,7 @@ import { useApp } from '../context/AppContext.jsx';
 import { Modal, PriorityBadge, ProgressBar } from '../components/shared.jsx';
 import { getTodayStats, getStreakCount } from '../store.js';
 import { colorForCategory } from '../categoryColor.js';
+import { nextOccurrence, advanceOccurrence } from '../recurrence.js';
 
 const CATEGORY_SUGGESTIONS = ['General', 'Work', 'Personal', 'Design', 'Development', 'Education', 'Health'];
 const REPEAT_OPTIONS = [
@@ -13,18 +14,9 @@ const REPEAT_OPTIONS = [
   { value: 'monthly', label: 'Every month' },
   { value: 'yearly', label: 'Every year' },
 ];
-const REPEAT_UNIT = { daily: 'day', weekly: 'week', monthly: 'month', yearly: 'year' };
 
 // Next due date on/after `from` for a (possibly recurring) task
-function nextTaskDueDate(task, from) {
-  if (!task.dueDate) return null;
-  const due = dayjs(task.dueDate);
-  const unit = REPEAT_UNIT[task.repeat];
-  if (!unit || due.isAfter(from, 'day') || due.isSame(from, 'day')) return due;
-  let next = due;
-  while (next.isBefore(from, 'day')) next = next.add(1, unit);
-  return next;
-}
+const nextTaskDueDate = (task, from) => nextOccurrence(task.dueDate, task.repeat, from);
 
 const emptyTask = {
   title: '', description: '', priority: 'medium', category: 'General',
@@ -351,8 +343,8 @@ export default function TasksPage() {
                 onToggle={() => {
                   if (task.status !== 'done' && task.repeat !== 'none' && task.dueDate) {
                     editTask(task.id, { status: 'done' });
-                    const current = nextTaskDueDate(task, dayjs());
-                    editTask(task.id, { status: 'todo', dueDate: current.add(1, REPEAT_UNIT[task.repeat]).toISOString(), progress: 0 });
+                    const next = advanceOccurrence(task.dueDate, task.repeat, dayjs());
+                    editTask(task.id, { status: 'todo', dueDate: next.toISOString(), progress: 0 });
                   } else {
                     editTask(task.id, { status: task.status === 'done' ? 'todo' : 'done' });
                   }
