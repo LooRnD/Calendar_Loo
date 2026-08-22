@@ -139,30 +139,30 @@ function EventModal({ isOpen, onClose, event = null, defaultDate = null }) {
             )}
           </div>
         ) : (
-          <div className="flex gap-12 mb-16">
-            <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
+          <>
+            <div className="form-group">
               <label className="form-label">Start Date</label>
-              <div className="flex gap-8">
-                <input type="date" className="form-input" style={{ flex: 1 }}
+              <div className="flex gap-8" style={{ flexWrap: 'wrap' }}>
+                <input type="date" className="form-input" style={{ flex: '1 1 140px', minWidth: 140 }}
                   value={dateOf(form.startDate)}
                   onChange={e => setDatePart('startDate', e.target.value)} />
-                <input type="time" className="form-input" style={{ width: 110 }}
+                <input type="time" className="form-input" style={{ flex: '1 1 110px', minWidth: 110 }}
                   value={timeOf(form.startDate)}
                   onChange={e => setTimePart('startDate', e.target.value)} />
               </div>
             </div>
-            <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
+            <div className="form-group">
               <label className="form-label">End Date</label>
-              <div className="flex gap-8">
-                <input type="date" className="form-input" style={{ flex: 1 }}
+              <div className="flex gap-8" style={{ flexWrap: 'wrap' }}>
+                <input type="date" className="form-input" style={{ flex: '1 1 140px', minWidth: 140 }}
                   value={dateOf(form.endDate)}
                   onChange={e => setDatePart('endDate', e.target.value)} />
-                <input type="time" className="form-input" style={{ width: 110 }}
+                <input type="time" className="form-input" style={{ flex: '1 1 110px', minWidth: 110 }}
                   value={timeOf(form.endDate)}
                   onChange={e => setTimePart('endDate', e.target.value)} />
               </div>
             </div>
-          </div>
+          </>
         )}
         <div className="form-group flex items-center gap-8">
           <input type="checkbox" id="all-day" checked={form.allDay}

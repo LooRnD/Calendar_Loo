@@ -127,11 +127,11 @@ function TaskModal({ isOpen, onClose, initialTask = null }) {
         </div>
         <div className="form-group">
           <label className="form-label">Deadline</label>
-          <div className="flex gap-8">
-            <input type="date" className="form-input" style={{ flex: 1 }}
+          <div className="flex gap-8" style={{ flexWrap: 'wrap' }}>
+            <input type="date" className="form-input" style={{ flex: '1 1 140px', minWidth: 140 }}
               value={dateOf(form.dueDate)}
               onChange={e => setDueDatePart(e.target.value)} />
-            <input type="time" className="form-input" style={{ width: 110 }}
+            <input type="time" className="form-input" style={{ flex: '1 1 110px', minWidth: 110 }}
               value={timeOf(form.dueDate)}
               onChange={e => setDueTimePart(e.target.value)} />
           </div>
