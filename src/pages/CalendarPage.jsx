@@ -109,7 +109,12 @@ function EventModal({ isOpen, onClose, event = null, defaultDate = null }) {
             </div>
             <input type="time" className="form-input" style={{ maxWidth: 160 }}
               value={form.startDate ? form.startDate.slice(11, 16) : ''}
-              onChange={e => setStartTime(e.target.value)} disabled={form.allDay} />
+              onChange={e => setStartTime(e.target.value)} />
+            {form.allDay && (
+              <div className="fs-13 text-secondary" style={{ marginTop: 4 }}>
+                Note: this event is marked "All day", so the time above isn't shown on the calendar.
+              </div>
+            )}
           </div>
         ) : (
           <div className="flex gap-12 mb-16">
