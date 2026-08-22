@@ -61,6 +61,14 @@ function EventModal({ isOpen, onClose, event = null, defaultDate = null }) {
 
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
 
+  const setStartTime = (time) => {
+    if (!form.startDate || !time) return;
+    set('startDate', `${form.startDate.slice(0, 11)}${time}:00.000Z`);
+  };
+
+  // Only lock the date for an *existing* recurring event — a brand new event still needs a start date picker
+  const isRepeating = Boolean(event) && form.repeat && form.repeat !== 'none';
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!form.title.trim()) return;
@@ -92,20 +100,33 @@ function EventModal({ isOpen, onClose, event = null, defaultDate = null }) {
           <label className="form-label">Color</label>
           <ColorPicker value={form.color} onChange={c => set('color', c)} />
         </div>
-        <div className="flex gap-12 mb-16">
-          <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
+        {isRepeating ? (
+          <div className="form-group">
             <label className="form-label">Start Date</label>
-            <input type="datetime-local" className="form-input"
-              value={form.startDate ? form.startDate.slice(0, 16) : ''}
-              onChange={e => set('startDate', e.target.value ? new Date(e.target.value).toISOString() : '')} />
+            <div className="fs-13 text-secondary mb-8">
+              🔁 This is a repeating series — it started on <strong>{dayjs(form.startDate).format('DD/MM/YYYY')}</strong>.
+              Editing here changes the whole series, not just the day you opened.
+            </div>
+            <input type="time" className="form-input" style={{ maxWidth: 160 }}
+              value={form.startDate ? form.startDate.slice(11, 16) : ''}
+              onChange={e => setStartTime(e.target.value)} disabled={form.allDay} />
           </div>
-          <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
-            <label className="form-label">End Date</label>
-            <input type="datetime-local" className="form-input"
-              value={form.endDate ? form.endDate.slice(0, 16) : ''}
-              onChange={e => set('endDate', e.target.value ? new Date(e.target.value).toISOString() : '')} />
+        ) : (
+          <div className="flex gap-12 mb-16">
+            <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
+              <label className="form-label">Start Date</label>
+              <input type="datetime-local" className="form-input"
+                value={form.startDate ? form.startDate.slice(0, 16) : ''}
+                onChange={e => set('startDate', e.target.value ? new Date(e.target.value).toISOString() : '')} />
+            </div>
+            <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
+              <label className="form-label">End Date</label>
+              <input type="datetime-local" className="form-input"
+                value={form.endDate ? form.endDate.slice(0, 16) : ''}
+                onChange={e => set('endDate', e.target.value ? new Date(e.target.value).toISOString() : '')} />
+            </div>
           </div>
-        </div>
+        )}
         <div className="form-group flex items-center gap-8">
           <input type="checkbox" id="all-day" checked={form.allDay}
             onChange={e => set('allDay', e.target.checked)}
